@@ -1,0 +1,3 @@
+gdown
+heavyedge >= 1.8.0
+heavyedge-classify==1.0.0
