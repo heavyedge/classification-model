@@ -5,7 +5,7 @@ from huggingface_hub import HfApi
 api = HfApi(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 REPO = "jeesoo9595/heavyedge-classify-v0"
-MODEL_VERSION = "v0.0.2"
+MODEL_VERSION = "v0.0.3"
 
 api.create_repo(
     repo_id=REPO,
@@ -17,11 +17,7 @@ api.upload_folder(
     repo_id=REPO,
     repo_type="model",
     commit_message=f"Upload model version {MODEL_VERSION}",
-    allow_patterns=[
-        "README.md",
-        "requirements.txt",
-        "classify-model.pkl",
-    ],
+    allow_patterns=["*"],
 )
 api.create_tag(
     repo_id=REPO,
