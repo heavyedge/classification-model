@@ -14,7 +14,8 @@ api.upload_folder(
     folder_path="model",
     repo_id="jeesoo9595/heavyedge-classify",
     repo_type="model",
-    commit_message=f"Upload model version {MODEL_VERSION}"
+    commit_message=f"Upload model version {MODEL_VERSION}",
+    allow_patterns=["*"],
 )
 api.create_tag(
     repo_id="jeesoo9595/heavyedge-classify",
