@@ -1,0 +1,1 @@
+heavyedge --log-level=INFO classify-train --n-splits 5 --random-state 0 _temp/MeanProfiles.h5 _temp/labels.npy -o model/heavyedge-classify.pkl

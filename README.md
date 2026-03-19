@@ -7,13 +7,27 @@ Repository to train [HeavyEdge-Classify](https://pypi.org/project/heavyedge-clas
 ```
 pip install gdown
 gdown --fuzzy [google drive link] -O dataset.tar
+pip install -r requirements.txt
 ```
 
 ## Preprocessing
 
 ```
-pip install -r requirements.txt
 mkdir -p _data
 tar -xf dataset.tar -C _data
-make _temp/MeanProfiles.h5
+make
+```
+
+## Training model and testing
+
+```
+./train.sh
+./test.sh
+```
+
+## Upload to HuggingFace
+
+```
+pip install huggingface_hub
+python3 upload.py
 ```

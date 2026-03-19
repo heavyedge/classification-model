@@ -1,0 +1,2 @@
+heavyedge --log-level=INFO classify-predict --batch-size 10 _temp/MeanProfiles.h5 model/heavyedge-classify.pkl -o _temp/label-pred.npy
+python3 -c "import numpy as np; assert np.load('_temp/label-pred.npy').shape[1] == len(np.unique(np.load('_temp/labels.npy')))"
