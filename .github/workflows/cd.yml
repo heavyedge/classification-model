@@ -6,120 +6,19 @@ on:
 
 jobs:
 
-  setup:
-    name: Setup environment
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-
-      - run: pip install gdown
-
-      - name: Download raw dataset
-        run: gdown --fuzzy "$GOOGLE_DRIVE_LINK" -O dataset.tar
-        env:
-          GOOGLE_DRIVE_LINK: ${{ secrets.GOOGLE_DRIVE_LINK }}
-
-      - name: Encrypt raw dataset
-        run: openssl enc -aes-256-cbc -pbkdf2 -in dataset.tar -out dataset.tar.enc -pass env:ARTIFACT_KEY
-        env:
-          ARTIFACT_KEY: ${{ secrets.ARTIFACT_KEY }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dataset
-          path: dataset.tar.enc
-          retention-days: 1
-
-  preprocess:
-    name: Preprocess data
-    runs-on: ubuntu-latest
-    needs: setup
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: dataset
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - run: pip install -r requirements.txt
-
-      - name: Decrypt and unpack raw dataset
-        run: |
-          openssl enc -d -aes-256-cbc -pbkdf2 -in dataset.tar.enc -out dataset.tar -pass env:ARTIFACT_KEY
-          mkdir -p _data
-          tar -xf dataset.tar -C _data
-        env:
-          ARTIFACT_KEY: ${{ secrets.ARTIFACT_KEY }}
-
-      - name: Preprocess and encrypt training data
-        run: |
-          make -j 10
-          tar -czf train-data.tar.gz -C _temp MeanProfiles.h5 labels.npy
-          openssl enc -aes-256-cbc -pbkdf2 -in train-data.tar.gz -out train-data.tar.gz.enc -pass env:ARTIFACT_KEY
-        env:
-          ARTIFACT_KEY: ${{ secrets.ARTIFACT_KEY }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: train-data
-          path: train-data.tar.gz.enc
-          retention-days: 1
-
   train:
     name: Train model
     runs-on: ubuntu-latest
-    needs: preprocess
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: train-data
-
-      - name: Decrypt and unpack training data
+      - name: Download profile data
         run: |
-          openssl enc -d -aes-256-cbc -pbkdf2 -in train-data.tar.gz.enc -out train-data.tar.gz -pass env:ARTIFACT_KEY
-          mkdir -p _temp
-          tar -xzf train-data.tar.gz -C _temp
-        env:
-          ARTIFACT_KEY: ${{ secrets.ARTIFACT_KEY }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - run: pip install -r requirements.txt
-
-      - name: Train model and test
-        run: |
-          ./train.sh
-          ./test.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: model
-          path: model.pkl
-          retention-days: 1
-
-  publish:
-    name: Publish model
-    runs-on: ubuntu-latest
-    needs: train
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: pip install huggingface_hub
-
-      - run: python3 upload.py
+          curl -LsSf https://hf.co/cli/install.sh | bash
+          hf auth login --token $HUGGINGFACE_TOKEN
+          hf download jeesoo9595/heavyedge-dataset-v1 --repo-type dataset --revision v1.0.0 --include "dataset.tar.gz"
+          mkdir -p _data
+          tar -xzf dataset.tar.gz -C _data
         env:
           HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
