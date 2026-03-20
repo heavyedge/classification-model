@@ -1,4 +1,5 @@
 # Train HeavyEdge-Classify
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Model-orange?logo=huggingface)](https://huggingface.co/jeesoo9595/heavyedge-classify-v1)
 
 Repository to train and distribute [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/) model.
 
