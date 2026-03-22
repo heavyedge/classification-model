@@ -1,1 +1,1 @@
-heavyedge-classify==1.0.1
+heavyedge-classify==1.1.0
