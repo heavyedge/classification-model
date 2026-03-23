@@ -15,4 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Trained with:
 
 - Model: `heavyedge-classify==1.0.1`
-- DatasetL `jeesoo9595/heavyedge-dataset-v1:v1.0.0`
+- Dataset: `jeesoo9595/heavyedge-dataset-v1:v1.0.0`
