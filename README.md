@@ -37,6 +37,24 @@ pip install huggingface_hub
 python3 upload.py
 ```
 
+## Developing
+
+### Re-building notebooks
+
+Configure the local git filter (run once after cloning):
+
+```
+git config filter.nbstripout.clean "nbstripout --keep-output --keep-metadata-keys 'metadata.language_info'"
+git config filter.nbstripout.smudge cat
+git config filter.nbstripout.required true
+```
+
+Then build the notebooks:
+
+```
+make notebooks
+```
+
 ## Versioning policy
 
 The HeavyEdge-Classify model follows semantic versioning.
