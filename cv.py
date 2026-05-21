@@ -1,6 +1,7 @@
 import argparse
 import csv
 import logging
+import os
 import pathlib
 import pickle
 
@@ -11,6 +12,8 @@ from sklearn.model_selection import StratifiedKFold
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
+
+N_SPLITS = int(os.getenv("HEAVYEDGE_N_SPLITS", 5))
 
 parser = argparse.ArgumentParser()
 parser.add_argument("profiles", type=pathlib.Path, help="Preprocessed profile data.")
@@ -43,7 +46,7 @@ with open(args.labels, "r") as f:
 
 n_classes = len(np.unique(y))
 
-outer_fold = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+outer_fold = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=0)
 outer_splits = list(outer_fold.split(X, y))
 
 log.info("Calibration method: %s", args.calibration)
@@ -55,14 +58,14 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
     log.info(
         "  Outer fold %d/%d (train=%d, test=%d)",
         fold_idx + 1,
-        5,
+        N_SPLITS,
         len(outer_train_idx),
         len(outer_test_idx),
     )
     X_outer_train = X[outer_train_idx]
     y_outer_train = y[outer_train_idx]
 
-    inner_fold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    inner_fold = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=42)
     inner_splits = list(inner_fold.split(X_outer_train, y_outer_train))
 
     model = minirocket_classifier(
@@ -75,7 +78,7 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
 
     y_prob_oof[outer_test_idx] = model.predict_proba(X[outer_test_idx])
     models.append(model)
-    log.info("  Outer fold %d/%d done", fold_idx + 1, 5)
+    log.info("  Outer fold %d/%d done", fold_idx + 1, N_SPLITS)
 
 log.info("Method %s complete", args.calibration)
 
