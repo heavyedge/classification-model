@@ -17,7 +17,7 @@ tar -xzf dataset.tar.gz -C _data
 ## Download label data
 
 ```
-pip install gdown
+pip install 'gdown<6.0.0'
 gdown --fuzzy [google drive link] -O labels.tar
 tar -xf labels.tar -C _data
 ```

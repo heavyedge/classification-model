@@ -87,7 +87,7 @@ jobs:
 
         - name: Download label data
           run: |
-            pip install gdown
+            pip install 'gdown<6.0.0'
             gdown --fuzzy $GOOGLE_DRIVE_LINK -O labels.tar
             tar -xf labels.tar -C _data
           env:
