@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.0] - UNRELEASED
 
-- Update dependency: `heavyedge-classify==1.3.0`.
+- Update dependency: `heavyedge-classify==1.4.0`.
+- Added notebooks
 
 ## [1.0.1] - 2026-03-23
 

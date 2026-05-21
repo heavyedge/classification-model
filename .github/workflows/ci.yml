@@ -1,0 +1,100 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: get repo
+        uses: actions/checkout@v3
+
+      - name: set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: install dependencies
+        run: |
+          pip install flake8 black[jupyter] isort
+
+      - name: lint with flake8
+        run: |
+          flake8
+
+      - name: lint with black
+        run: |
+          black --check .
+
+      - name: lint with isort
+        run: |
+          isort --check .
+
+  find-notebooks:
+
+      needs: lint
+
+      runs-on: ubuntu-latest
+
+      outputs:
+        notebooks: ${{ steps.list.outputs.notebooks }}
+
+      steps:
+
+        - name: get repo
+          uses: actions/checkout@v3
+
+        - name: list notebooks
+          id: list
+          run: |
+            notebooks=$(find notebooks -name "*.ipynb" | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "notebooks=$notebooks" >> $GITHUB_OUTPUT
+
+  notebooks:
+
+      needs: find-notebooks
+
+      runs-on: ubuntu-latest
+
+      strategy:
+        fail-fast: false
+        matrix:
+          notebook: ${{ fromJson(needs.find-notebooks.outputs.notebooks) }}
+
+      steps:
+
+        - name: get repo
+          uses: actions/checkout@v3
+
+        - name: set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: "3.12"
+
+        - name: Download profile data
+          run: |
+            curl -LsSf https://hf.co/cli/install.sh | bash
+            hf auth login --token $HUGGINGFACE_TOKEN
+            hf download jeesoo9595/heavyedge-profiles-v1 --repo-type dataset --revision v1.0.0 --include "dataset.tar.gz" --local-dir .
+            mkdir -p _data
+            tar -xzf dataset.tar.gz -C _data
+          env:
+            HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+
+        - name: Download label data
+          run: |
+            pip install 'gdown<6.0.0'
+            gdown --fuzzy $GOOGLE_DRIVE_LINK -O labels.tar
+            tar -xf labels.tar -C _data
+          env:
+            GOOGLE_DRIVE_LINK: ${{ secrets.GOOGLE_DRIVE_LINK }}
+
+        - name: install package
+          run: |
+            pip install -r requirements.txt
+
+        - run: HEAVYEDGE_N_SPLITS=2 make ${{ matrix.notebook }}

@@ -17,7 +17,7 @@ tar -xzf dataset.tar.gz -C _data
 ## Download label data
 
 ```
-pip install gdown
+pip install 'gdown<6.0.0'
 gdown --fuzzy [google drive link] -O labels.tar
 tar -xf labels.tar -C _data
 ```
@@ -35,6 +35,24 @@ make test
 ```
 pip install huggingface_hub
 python3 upload.py
+```
+
+## Developing
+
+### Re-building notebooks
+
+Configure the local git filter (run once after cloning):
+
+```
+git config filter.nbstripout.clean "nbstripout --keep-output --keep-metadata-keys 'metadata.language_info'"
+git config filter.nbstripout.smudge cat
+git config filter.nbstripout.required true
+```
+
+Then build the notebooks:
+
+```
+make notebooks
 ```
 
 ## Versioning policy
