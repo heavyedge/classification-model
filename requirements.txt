@@ -4,3 +4,4 @@ heavyedge-classify==1.4.0
 ipykernel
 nbconvert
 nbstripout
+matplotlib
