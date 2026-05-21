@@ -30,6 +30,9 @@ _temp/canonical.csv: $(foreach dataset, $(DATASETS), _data/$(dataset)/canonical.
 _temp/labels.csv: write-labels.py _temp/knees.csv _temp/canonical.csv
 	python3 $^ -o $@
 
+_temp/CV.%.pkl: cv.py _temp/MeanProfiles.h5 _temp/labels.csv
+	python3 $^ --calibration $* -o $@
+
 _temp/classify-model.%.pkl: _temp/MeanProfiles.h5 _temp/labels.csv
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits 5 --calibration $* --random-state 42 $^ -o $@
