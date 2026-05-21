@@ -69,7 +69,7 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
         cv=inner_splits,
         calibration=args.calibration,
         verbose=True,
-        random_state=0,
+        random_state=42,
     )
     model.fit(X_outer_train, y_outer_train)
 

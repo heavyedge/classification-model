@@ -1,5 +1,6 @@
 pandas
 heavyedge >= 1.8.0
 heavyedge-classify==1.4.0
+ipykernel
 nbconvert
 nbstripout
