@@ -3,11 +3,16 @@
 DATASETS_v1 := $(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename)
 PROFILES_v1 = $(shell ls _data/v1/profiles/$(1)/*-Mean.h5)
 
-.PHONY: all models clean
+.PHONY: all models test clean
 
 all: model/requirements.txt model/model.pkl
 
 models: models/v1/model.sigmoid.pkl models/v1/model.sigmoid_ovo.pkl models/v1/model.isotonic.pkl models/v1/model.isotonic_ovo.pkl models/v1/model.temperature.pkl
+
+test: _data/v1/profiles/dataset1/001-Mean.h5 model/model.pkl
+	out=$$(mktemp).npy
+	trap 'rm -f $$out' EXIT INT TERM
+	heavyedge --log-level=INFO classify-predict $^ -o $$out
 
 clean:
 	rm -rf _temp models model/*.pkl
