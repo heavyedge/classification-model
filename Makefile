@@ -1,7 +1,8 @@
 .ONESHELL:
 
-DATASETS_v1 := $(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename)
+DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename))
 PROFILES_v1 = $(shell ls _data/v1/profiles/$(1)/*-Mean.h5)
+N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 
 .PHONY: all models test clean
 
@@ -9,7 +10,7 @@ all: model/requirements.txt model/model.pkl
 
 models: models/v1/model.sigmoid.pkl models/v1/model.sigmoid_ovo.pkl models/v1/model.isotonic.pkl models/v1/model.isotonic_ovo.pkl models/v1/model.temperature.pkl
 
-test: _data/v1/profiles/dataset1/001-Mean.h5 model/model.pkl
+test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
 	out=$$(mktemp).npy
 	trap 'rm -f $$out' EXIT INT TERM
 	heavyedge --log-level=INFO classify-predict $^ -o $$out
@@ -34,7 +35,7 @@ _temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/cano
 
 models/v1/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
-	heavyedge --log-level=INFO classify-train --n-splits 5 --calibration $* --random-state 42 $^ -o $@
+	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --random-state 42 $^ -o $@
 
 model/requirements.txt: requirements.txt
 	mkdir -p $(@D)
