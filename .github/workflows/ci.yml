@@ -156,7 +156,7 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:infer-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).npy"
+            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:infer-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).csv"
 
   image-base:
 
@@ -200,7 +200,7 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:base-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).npy"
+            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:base-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).csv"
             docker run --rm -v $PWD/_data:/app/_data heavyedge-classification-models:base-ci sh -c 'uv pip install --system -r requirements.txt && HEAVYEDGE_TEST_MODE=1 make'
 
   image-dev:
@@ -245,5 +245,5 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm heavyedge-classification-models:dev-ci sh -c "uv pip install --system -r requirements.txt && heavyedge classify-predict _data/v1/profiles/dataset5/001-Mean.h5 ./model/model.pkl -o $(mktemp).npy"
+            docker run --rm heavyedge-classification-models:dev-ci sh -c "uv pip install --system -r requirements.txt && heavyedge classify-predict _data/v1/profiles/dataset5/001-Mean.h5 ./model/model.pkl -o $(mktemp).csv"
             docker run --rm heavyedge-classification-models:dev-ci sh -c 'uv pip install --system -r requirements.txt && HEAVYEDGE_TEST_MODE=1 make'

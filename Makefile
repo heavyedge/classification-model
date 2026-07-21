@@ -11,7 +11,7 @@ all: model/requirements.txt model/model.pkl
 models: models/v1/model.sigmoid.pkl models/v1/model.sigmoid_ovo.pkl models/v1/model.isotonic.pkl models/v1/model.isotonic_ovo.pkl models/v1/model.temperature.pkl
 
 test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
-	out=$$(mktemp).npy
+	out=$$(mktemp).csv
 	trap 'rm -f $$out' EXIT INT TERM
 	heavyedge --log-level=INFO classify-predict $^ -o $$out
 
