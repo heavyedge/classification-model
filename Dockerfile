@@ -1,4 +1,8 @@
+FROM ghcr.io/astral-sh/uv:latest AS uv
+
+
 FROM python:slim AS dev
+COPY --from=uv /uv /uvx /usr/local/bin/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential ca-certificates curl git jq openssl \
@@ -21,6 +25,7 @@ LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
 
 
 FROM python:slim AS infer
+COPY --from=uv /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 COPY model ./model
@@ -40,6 +45,7 @@ LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
 
 
 FROM python:slim AS base
+COPY --from=uv /uv /uvx /usr/local/bin/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
