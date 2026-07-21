@@ -33,3 +33,27 @@ jobs:
       - name: lint with isort
         run: |
           isort --check .
+
+  train-models:
+
+      needs: lint
+
+      runs-on: ubuntu-latest
+
+      steps:
+
+        - name: get repo
+          uses: actions/checkout@v3
+
+        - name: set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: "3.12"
+
+        - run: ./setup.sh
+          env:
+            HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+            LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
+
+        - name: build model
+          run: make

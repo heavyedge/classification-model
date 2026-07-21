@@ -12,20 +12,6 @@ export LABELS_V1_GDRIVE="..."
 ./setup.sh
 ```
 
-## Train & test
-
-```
-make
-make test
-```
-
-## Upload
-
-```
-pip install huggingface_hub
-python3 upload.py
-```
-
 ## Contributing
 
 ### Configuring git

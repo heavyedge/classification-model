@@ -14,5 +14,5 @@ pip install -r requirements.txt
 Usage:
 
 ```
-heavyedge classify-predict <input.h5> classify-model.pkl -o <output>
+heavyedge classify-predict <input.h5> model.pkl -o <output>
 ```
