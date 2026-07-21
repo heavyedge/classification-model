@@ -17,6 +17,7 @@ def env(name, default=""):
 class BuildStatus(IntEnum):
     SUCCESS = 0
     SETUP_FAILED = 1
+    BUILD_FAILED = 2
 
 
 class DeployStatus(IntEnum):
