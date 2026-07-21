@@ -60,3 +60,38 @@ jobs:
 
         - name: test model
           run: make test
+
+        - uses: actions/upload-artifact@v4
+          with:
+            name: trained-models
+            path: model/*
+            retention-days: 1
+
+  test-model:
+
+      needs: train-model
+
+      runs-on: ubuntu-latest
+
+      steps:
+
+        - name: get repo
+          uses: actions/checkout@v3
+
+        - name: set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: "3.12"
+
+        - run: ./setup.sh
+          env:
+            HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+            LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
+
+        - uses: actions/download-artifact@v4
+          with:
+            name: trained-model
+            path: model
+
+        - name: test model
+          run: make test
