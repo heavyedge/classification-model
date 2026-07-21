@@ -1,11 +1,6 @@
-dataset.tar.gz
-labels.tar
 _data
 _temp
-model/classify-model.pkl
-
-.vscode
-nohup.out
+model/*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
