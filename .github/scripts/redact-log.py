@@ -14,6 +14,12 @@ parser.add_argument(
     required=True,
     help="Template file whose ${NAME} variables are used to discover secrets.",
 )
+parser.add_argument(
+    "--whitelist",
+    nargs="*",
+    default=[],
+    help="List of environment variable names to ignore when redacting.",
+)
 args = parser.parse_args()
 
 content = args.input_file.read_text(encoding="utf-8", errors="replace")
@@ -21,16 +27,19 @@ template_names = set()
 template = args.template_file.read_text(encoding="utf-8", errors="replace")
 template_names = set(re.findall(r"\$\{([A-Z_][A-Z0-9_]*)\}", template))
 
-missing_names = sorted(name for name in template_names if name not in os.environ)
+ok = list(os.environ.keys()) + args.whitelist
+missing_names = sorted(name for name in template_names if name not in ok)
 if missing_names:
     print(
         "WARNING: refusing to redact log because these template variables "
         f"are missing from the environment: {', '.join(missing_names)}"
+        "\n"
+        "Please set them in the environment or add them to the whitelist."
     )
     raise SystemExit(2)
 
 secrets = sorted(
-    {os.environ[name] for name in template_names},
+    {os.environ[name] for name in template_names if name in os.environ},
     key=len,
     reverse=True,
 )
