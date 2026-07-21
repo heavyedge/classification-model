@@ -50,7 +50,7 @@ jobs:
           with:
             python-version: "3.12"
 
-        - run: ./setup.sh
+        - run: HEAVYEDGE_TEST_MODE=1 ./setup.sh
           env:
             HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
             LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
@@ -59,7 +59,7 @@ jobs:
           run: HEAVYEDGE_TEST_MODE=1 make
 
         - name: test model
-          run: make test
+          run: HEAVYEDGE_TEST_MODE=1 make test
 
         - uses: actions/upload-artifact@v4
           with:
@@ -100,4 +100,4 @@ jobs:
             path: model
 
         - name: test model
-          run: make test
+          run: HEAVYEDGE_TEST_MODE=1 make test
