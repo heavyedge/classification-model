@@ -154,3 +154,109 @@ jobs:
               `Could not resolve a public notification email for ${login || 'the commit author'}; deployment email notification will be skipped.`
             );
             core.setOutput('email', '');
+
+  create-checks:
+
+    needs:
+      - build-image
+      - resolve-variables
+
+    outputs:
+      build-check-run-id: ${{ steps.deploy-checks.outputs.build-check-run-id }}
+      upload-model-check-run-id: ${{ steps.deploy-checks.outputs.upload-model-check-run-id }}
+      upload-artifact-check-run-id: ${{ steps.deploy-checks.outputs.upload-artifact-check-run-id }}
+      cleanup-check-run-id: ${{ steps.deploy-checks.outputs.cleanup-check-run-id }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Create GitHub App token for deploy checks
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-checks: write
+
+      - name: Create deploy checks
+        id: deploy-checks
+        uses: actions/github-script@v9
+        env:
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MODEL_MODE: ${{ needs.resolve-variables.outputs.model_mode }}
+          EVENT_NAME: ${{ github.event_name }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+              const checks = [
+                ['build-check-run-id', 'Build', 'Build is queued.'],
+                ['cleanup-check-run-id', 'CD Cleanup', 'CD cleanup is queued.'],
+              ];
+              if (['release', 'post'].includes(process.env.MODEL_MODE)) {
+                checks.push(['upload-model-check-run-id', 'Upload model', 'Model upload is queued.']);
+              }
+              if (process.env.EVENT_NAME === 'release') {
+                checks.push(['upload-artifact-check-run-id', 'Upload release artifact', 'Release artifact upload is queued.']);
+              }
+
+              for (const [outputName, checkName, summary] of checks) {
+                const response = await github.rest.checks.create({
+                  ...context.repo,
+                  name: checkName,
+                  head_sha: process.env.GIT_SHA,
+                  status: 'in_progress',
+                  started_at: new Date().toISOString(),
+                  details_url: process.env.GITHUB_RUN_URL,
+                  output: {
+                    title: checkName,
+                    summary,
+                  },
+                });
+
+                core.setOutput(outputName, String(response.data.id));
+              }
+
+  deploy-fallback:
+
+    needs:
+      - build-image
+      - create-checks
+
+    if: ${{ always() }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Create GitHub App token for cd-cleanup dispatch
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-actions: write
+
+      - name: Dispatch cd-cleanup workflow
+        shell: bash
+        env:
+          GITHUB_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_DISPATCH_REF: ${{ github.head_ref || github.ref_name }}
+          BUILD_CHECK_RUN_ID: ${{ needs.create-checks.outputs.build-check-run-id }}
+          UPLOAD_MODEL_CHECK_RUN_ID: ${{ needs.create-checks.outputs.upload-model-check-run-id }}
+          UPLOAD_ARTIFACT_CHECK_RUN_ID: ${{ needs.create-checks.outputs.upload-artifact-check-run-id }}
+          CLEANUP_CHECK_RUN_ID: ${{ needs.create-checks.outputs.cleanup-check-run-id }}
+          IMAGE_TAG: ${{ needs.build-image.outputs.tag }}
+          BUILD_CONCLUSION: failure
+          UPLOAD_MODEL_CONCLUSION: failure
+          UPLOAD_ARTIFACT_CONCLUSION: failure
+        run: |
+          sh .github/scripts/deploy-dispatch.sh
+
