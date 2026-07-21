@@ -27,6 +27,10 @@ LABEL org.opencontainers.image.created="${IMAGE_CREATED}" \
 FROM python:slim AS infer
 COPY --from=uv /uv /uvx /usr/local/bin/
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY model ./model
 COPY README.md LICENSE ./
