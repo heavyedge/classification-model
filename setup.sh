@@ -12,7 +12,7 @@ requirements_pid=$!
 (
     curl -LsSf https://hf.co/cli/install.sh | bash
     hf auth login --token "$HF_TOKEN"
-    hf download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc0 --include "v1/profiles/*" --local-dir _data/
+    hf download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc0 --include "v1/profiles/**/*-Mean.h5" --local-dir _data/
 ) &
 profiles_pid=$!
 
