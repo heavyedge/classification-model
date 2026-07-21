@@ -34,7 +34,7 @@ jobs:
         run: |
           isort --check .
 
-  train-models:
+  train-model:
 
       needs: lint
 
@@ -56,4 +56,7 @@ jobs:
             LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
 
         - name: build model
-          run: make
+          run: HEAVYEDGE_TEST_MODE=1 make
+
+        - name: test model
+          run: make test
