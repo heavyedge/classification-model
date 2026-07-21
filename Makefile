@@ -1,63 +1,48 @@
-NOTEBOOKS := $(wildcard notebooks/*)
-DATASETS := $(shell ls -d _data/dataset* | sed -E 's|^[^/]*/||')
-
 .ONESHELL:
 
-.PHONY: all notebooks test test-hardlabel test-softlabel clean FORCE
+DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename))
+PROFILES_v1 = $(shell ls _data/v1/profiles/$(1)/*-Mean.h5)
+N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 
-all: model/classify-model.pkl test
+.PHONY: all models test clean
 
-notebooks: $(NOTEBOOKS)
+all: model/requirements.txt model/model.pkl
 
-test: test-hardlabel test-softlabel
+models: models/v1/model.sigmoid.pkl models/v1/model.sigmoid_ovo.pkl models/v1/model.isotonic.pkl models/v1/model.isotonic_ovo.pkl models/v1/model.temperature.pkl
 
-test-hardlabel: _temp/hardlabel-pred.csv _temp/labels.csv
-	python3 -c "import pandas as pd; assert pd.read_csv('$(word 1,$^)').shape == pd.read_csv('$(word 2,$^)').shape"
-
-test-softlabel: _temp/softlabel-pred.csv _temp/labels.csv
-	python3 -c "import pandas as pd; assert pd.read_csv('$(word 1,$^)').shape[0] == pd.read_csv('$(word 2,$^)').shape[0]"
+test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
+	out=$$(mktemp).npy
+	trap 'rm -f $$out' EXIT INT TERM
+	heavyedge --log-level=INFO classify-predict $^ -o $$out
 
 clean:
-	rm -rf _temp model/*.pkl
+	rm -rf _temp models model/*.pkl
 
-# Notebooks
-
-notebooks/%.ipynb: _temp/labels.csv _temp/CV.sigmoid.pkl _temp/CV.sigmoid_ovo.pkl _temp/CV.isotonic.pkl _temp/CV.isotonic_ovo.pkl _temp/CV.temperature.pkl FORCE
-	jupyter nbconvert --to notebook --execute --inplace $@
-
-FORCE:  # dummy target to force execution of dependent targets
-
-# Data
-
-_temp/MeanProfiles.h5: $(foreach dataset, $(DATASETS), _data/$(dataset)/MeanProfiles.h5)
+_temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
 	mkdir -p $(@D)
 	heavyedge merge $^ -o $@
 
-_temp/knees.csv: $(foreach dataset, $(DATASETS), _data/$(dataset)/knees.csv)
+_temp/v1/knees.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dataset)/knees.csv)
 	mkdir -p $(@D)
 	python3 -c "import pandas as pd; dfs = [pd.read_csv(path) for path in '$^'.split()]; pd.concat(dfs)[['Type']].to_csv('$@', index=False)"
 
-_temp/canonical.csv: $(foreach dataset, $(DATASETS), _data/$(dataset)/canonical.csv)
+_temp/v1/canonical.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dataset)/canonical.csv)
 	mkdir -p $(@D)
 	python3 -c "import pandas as pd; dfs = [pd.read_csv(path) for path in '$^'.split()]; pd.concat(dfs)[['Type']].to_csv('$@', index=False)"
 
-_temp/labels.csv: write-labels.py _temp/knees.csv _temp/canonical.csv
+_temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/canonical.csv
 	python3 $^ -o $@
 
-_temp/CV.%.pkl: cv.py _temp/MeanProfiles.h5 _temp/labels.csv
-	python3 $^ --calibration $* -o $@
-
-_temp/classify-model.%.pkl: _temp/MeanProfiles.h5 _temp/labels.csv
+models/v1/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
-	heavyedge --log-level=INFO classify-train --n-splits 5 --calibration $* --random-state 42 $^ -o $@
+	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --random-state 42 $^ -o $@
 
-model/classify-model.pkl: _temp/classify-model.sigmoid.pkl
+model/requirements.txt: requirements.txt
+	mkdir -p $(@D)
+	grep -E '^(heavyedge-classify)([>=<!~,; \t]|$$)' $< > $@
+
+model/model.pkl: models/v1/model.sigmoid.pkl
+	mkdir -p $(@D)
 	cp $^ $@
-
-_temp/softlabel-pred.csv: _temp/MeanProfiles.h5 model/classify-model.pkl
-	heavyedge --log-level=INFO classify-predict --batch-size 10 --label-type soft $^ -o $@
-
-_temp/hardlabel-pred.csv: _temp/MeanProfiles.h5 model/classify-model.pkl
-	heavyedge --log-level=INFO classify-predict --batch-size 10 --label-type hard $^ -o $@
 
 .SECONDARY:
