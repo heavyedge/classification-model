@@ -97,7 +97,7 @@ jobs:
         - uses: actions/download-artifact@v4
           with:
             name: test-dataset
-            path: _data/v1/profiles/dataset5/001-Mean.h5
+            path: _data/v1/profiles/dataset5
 
         - uses: actions/download-artifact@v4
           with:
