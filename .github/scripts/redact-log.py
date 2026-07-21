@@ -21,21 +21,18 @@ template_names = set()
 template = args.template_file.read_text(encoding="utf-8", errors="replace")
 template_names = set(re.findall(r"\$\{([A-Z_][A-Z0-9_]*)\}", template))
 
-unresolved_names = sorted(
-    name for name in template_names if re.search(rf"\$\{{{re.escape(name)}\}}", content)
-)
-if unresolved_names:
+missing_names = sorted(name for name in template_names if name not in os.environ)
+if missing_names:
     print(
-        "WARNING: refusing to collect log because these template variables "
-        f"were not substituted: {', '.join(unresolved_names)}"
+        "WARNING: refusing to redact log because these template variables "
+        f"are missing from the environment: {', '.join(missing_names)}"
     )
     raise SystemExit(2)
 
 secrets = sorted(
     {
         os.environ[name]
-        for name in {*template_names}
-        if os.environ.get(name) and len(os.environ[name]) >= 3
+        for name in template_names
     },
     key=len,
     reverse=True,
