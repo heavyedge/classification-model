@@ -184,3 +184,4 @@ jobs:
         - name: Test Docker image
           run: |
             docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:base-ci /bin/sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).npy"
+            docker run --rm -v $PWD/_data:/app/_data heavyedge-classification-models:base-ci sh -c 'uv pip install --system -r requirements.txt && HEAVYEDGE_TEST_MODE=1 make'
