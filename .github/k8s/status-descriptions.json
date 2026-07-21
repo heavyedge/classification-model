@@ -1,6 +1,7 @@
 {
   "build": {
-    "0": "Build completed successfully."
+    "0": "Build completed successfully.",
+    "1": "Setup failed."
   },
   "deploy": {
     "0": "Deploy completed successfully."
