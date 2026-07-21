@@ -30,10 +30,7 @@ if missing_names:
     raise SystemExit(2)
 
 secrets = sorted(
-    {
-        os.environ[name]
-        for name in template_names
-    },
+    {os.environ[name] for name in template_names},
     key=len,
     reverse=True,
 )
