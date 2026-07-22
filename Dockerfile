@@ -10,7 +10,6 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY model ./model
-COPY models ./models
 COPY README.md LICENSE ./
 
 ARG IMAGE_CREATED
