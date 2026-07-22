@@ -132,6 +132,7 @@ After downloading the dataset and training `model` and `models`, build the image
   - Includes essential environment for inference.
   - Includes non-hidden source files.
 - `dev`
+  - Includes the dataset (`_data`).
   - Includes the trained model and other models (`model`, `models`).
   - Includes essential environment for inference.
   - Includes all source files.
