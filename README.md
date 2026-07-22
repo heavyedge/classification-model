@@ -118,6 +118,26 @@ export HEAVYEDGE_TEST_MODE=1
 make model test
 ```
 
+### Building the container image
+
+The `Dockerfile` is provided to facilitate model distribution without sharing secrets.
+
+After downloading the dataset and training `model` and `models`, build the image with one of the following targets:
+
+- `model`
+  - Includes the trained model files (`model`, `models`).
+- `infer`
+  - Includes the trained model files (`model`, `models`).
+  - Includes essential environment for inference.
+- `base` (default)
+  - Includes the trained model files (`model`, `models`).
+  - Includes essential environment for inference.
+  - Includes non-hidden source files.
+- `dev`
+  - Includes the trained model files (`model`, `models`).
+  - Includes essential environment for inference.
+  - Includes all source files.
+
 ### Versioning policy
 
 This repository follows semantic versioning with [Python version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/):
