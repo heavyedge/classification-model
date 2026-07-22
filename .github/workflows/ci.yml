@@ -1,6 +1,8 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
 
@@ -18,9 +20,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: set up uv
+        uses: astral-sh/setup-uv@v5
+
       - name: install dependencies
         run: |
-          pip install flake8 black[jupyter] isort
+          uv pip install --system flake8 "black[jupyter]" isort
 
       - name: lint with flake8
         run: |
@@ -34,9 +39,7 @@ jobs:
         run: |
           isort --check .
 
-  train-model:
-
-      needs: lint
+  train-models:
 
       runs-on: ubuntu-latest
 
@@ -56,7 +59,7 @@ jobs:
             LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
 
         - name: build model
-          run: HEAVYEDGE_TEST_MODE=1 make
+          run: HEAVYEDGE_TEST_MODE=1 make model models
 
         - name: test model
           run: HEAVYEDGE_TEST_MODE=1 make test
@@ -81,8 +84,10 @@ jobs:
 
         - uses: actions/upload-artifact@v4
           with:
-            name: trained-model
-            path: model/*
+            name: trained-models
+            path: |
+              model/*
+              models/*
             retention-days: 1
 
   test-model:
@@ -113,137 +118,8 @@ jobs:
 
         - uses: actions/download-artifact@v4
           with:
-            name: trained-model
-            path: model
+            name: trained-models
+            path: .
 
         - name: test model
           run: HEAVYEDGE_TEST_MODE=1 make test
-
-  image-infer:
-
-      needs: train-model
-
-      runs-on: ubuntu-latest
-
-      steps:
-
-        - name: Checkout
-          uses: actions/checkout@v4
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: test-dataset
-            path: _data/v1/profiles/dataset5
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: trained-model
-            path: model
-
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-
-        - name: Build Docker image
-          uses: docker/build-push-action@v6
-          with:
-            context: .
-            load: true
-            push: false
-            target: infer
-            cache-from: type=gha,scope=classification-models-infer
-            cache-to: type=gha,mode=max,scope=classification-models-infer
-            tags: heavyedge-classification-models:infer-ci
-
-        - name: Test Docker image
-          run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:infer-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).csv"
-
-  image-base:
-
-      needs: train-model
-
-      runs-on: ubuntu-latest
-
-      steps:
-
-        - name: Checkout
-          uses: actions/checkout@v4
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: trained-model
-            path: model
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: train-profiles
-            path: _data/v1/profiles/dataset5
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: train-labels
-            path: _data/v1/labels/dataset5
-
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-
-        - name: Build Docker image
-          uses: docker/build-push-action@v6
-          with:
-            context: .
-            load: true
-            push: false
-            target: base
-            cache-from: type=gha,scope=classification-models-base
-            cache-to: type=gha,mode=max,scope=classification-models-base
-            tags: heavyedge-classification-models:base-ci
-
-        - name: Test Docker image
-          run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/profiles/dataset5:/workdir heavyedge-classification-models:base-ci sh -c "uv pip install --system -r /app/model/requirements.txt && heavyedge classify-predict 001-Mean.h5 /app/model/model.pkl -o $(mktemp).csv"
-            docker run --rm -v $PWD/_data:/app/_data heavyedge-classification-models:base-ci sh -c 'uv pip install --system -r requirements.txt && HEAVYEDGE_TEST_MODE=1 make'
-
-  image-dev:
-
-      needs: train-model
-
-      runs-on: ubuntu-latest
-
-      steps:
-
-        - name: Checkout
-          uses: actions/checkout@v4
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: trained-model
-            path: model
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: train-profiles
-            path: _data/v1/profiles/dataset5
-
-        - uses: actions/download-artifact@v4
-          with:
-            name: train-labels
-            path: _data/v1/labels/dataset5
-
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-
-        - name: Build Docker image
-          uses: docker/build-push-action@v6
-          with:
-            context: .
-            load: true
-            push: false
-            target: dev
-            cache-from: type=gha,scope=classification-models-dev
-            cache-to: type=gha,mode=max,scope=classification-models-dev
-            tags: heavyedge-classification-models:dev-ci
-
-        - name: Test Docker image
-          run: |
-            docker run --rm heavyedge-classification-models:dev-ci sh -c "uv pip install --system -r requirements.txt && heavyedge classify-predict _data/v1/profiles/dataset5/001-Mean.h5 ./model/model.pkl -o $(mktemp).csv"
-            docker run --rm heavyedge-classification-models:dev-ci sh -c 'uv pip install --system -r requirements.txt && HEAVYEDGE_TEST_MODE=1 make'
