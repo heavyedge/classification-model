@@ -139,7 +139,7 @@ jobs:
         - uses: actions/download-artifact@v4
           with:
             name: train-data
-            path: .
+            path: _data
 
         - uses: actions/download-artifact@v4
           with:
