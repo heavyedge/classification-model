@@ -74,8 +74,10 @@ jobs:
 
         - uses: actions/upload-artifact@v4
           with:
-            name: test-data
-            path: _data/v1/profiles/dataset5/001-Mean.h5
+            name: trained-models
+            path: |
+              model/*
+              models/*
             retention-days: 1
 
   image-infer:
@@ -91,8 +93,8 @@ jobs:
 
         - uses: actions/download-artifact@v4
           with:
-            name: test-data
-            path: _data/v1/profiles/dataset5
+            name: trained-models
+            path: .
 
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
@@ -130,8 +132,8 @@ jobs:
 
         - uses: actions/download-artifact@v4
           with:
-            name: test-data
-            path: _data/v1/profiles/dataset5
+            name: trained-models
+            path: .
 
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
@@ -165,8 +167,13 @@ jobs:
 
         - uses: actions/download-artifact@v4
           with:
-            name: test-data
-            path: _data/v1/profiles/dataset5
+            name: train-data
+            path: _data/v1
+
+        - uses: actions/download-artifact@v4
+          with:
+            name: trained-models
+            path: .
 
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
