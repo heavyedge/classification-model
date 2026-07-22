@@ -137,11 +137,11 @@ spec:
                 secretKeyRef:
                   name: gdrive
                   key: LABELS_V1_GDRIVE
-            - name: HUGGINGFACE_TOKEN
+            - name: HF_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: huggingface-token
-                  key: HUGGINGFACE_TOKEN
+                  key: HF_TOKEN
             - name: BUILD_MODE
               value: "${BUILD_MODE}"
             - name: DEPLOY_MODE
