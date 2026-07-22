@@ -3,6 +3,7 @@
 DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename))
 PROFILES_v1 = $(shell ls _data/v1/profiles/$(1)/*-Mean.h5)
 N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
+TRAIN_JOBS ?= 1
 
 .PHONY: all models test clean
 
@@ -35,7 +36,7 @@ _temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/cano
 
 models/v1/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
-	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --random-state 42 $^ -o $@
+	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
 
 model/requirements.txt: requirements.txt
 	mkdir -p $(@D)

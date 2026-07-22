@@ -330,7 +330,9 @@ jobs:
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
           KUBE_USERNAME: ${{ secrets.KUBE_USERNAME }}
           MLXP_ZONE: ${{ secrets.MLXP_ZONE }}
-          CPU_REQUEST: ${{ needs.resolve-variables.outputs.model_mode == 'test' && '1' || vars.CPU_REQUEST }}
+          CPU_REQUEST: ${{ needs.resolve-variables.outputs.model_mode == 'test' && vars.TRAIN_JOBS || vars.CPU_REQUEST }}
+          MAKE_JOBS: ${{ needs.resolve-variables.outputs.model_mode == 'test' && '1' || vars.MAKE_JOBS }}
+          TRAIN_JOBS: ${{ vars.TRAIN_JOBS }}
           DOCKER_REGISTRY: ghcr.io
           DOCKER_NAMESPACE: ${{ github.repository_owner }}
           IMAGE_NAME: ${{ vars.IMAGE_NAME }}
