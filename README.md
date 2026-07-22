@@ -124,8 +124,6 @@ The `Dockerfile` is provided to facilitate model distribution without sharing se
 
 After downloading the dataset and training `model` and `models`, build the image with one of the following targets:
 
-- `model`
-  - Includes the trained model files (`model`, `models`).
 - `infer`
   - Includes the trained model files (`model`, `models`).
   - Includes essential environment for inference.
