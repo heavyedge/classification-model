@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
 import os
 import smtplib
 import sys
 from email.message import EmailMessage
 from enum import IntEnum, IntFlag
-from pathlib import Path
 
 
 def env(name, default=""):
@@ -17,12 +15,15 @@ def env(name, default=""):
 class BuildStatus(IntEnum):
     SUCCESS = 0
     SETUP_FAILED = 1
-    MODEL_MODE_RESOLUTION_FAILED = 2
-    BUILD_FAILED = 3
+    BUILD_FAILED = 2
+    TEST_FAILED = 3
+    DOC_BUILD_FAILED = 4
 
 
-class DeployStatus(IntEnum):
+class DeployStatus(IntFlag):
     SUCCESS = 0
+    DEPLOY_FAILED = 1
+    DOC_DEPLOY_FAILED = 2
 
 
 class TokenStatus(IntEnum):
@@ -51,31 +52,6 @@ class ContainerExitCode(IntFlag):
     DISPATCH_FAILED = 8
 
 
-STATUS_DESCRIPTION_SECTIONS = {
-    BuildStatus: "build",
-    DeployStatus: "deploy",
-    TokenStatus: "token",
-    DispatchStatus: "dispatch",
-}
-
-
-def load_status_descriptions():
-    path = Path(__file__).with_name("status-descriptions.json")
-    with path.open(encoding="utf-8") as f:
-        raw_descriptions = json.load(f)
-
-    descriptions = {}
-    for enum_class, section in STATUS_DESCRIPTION_SECTIONS.items():
-        descriptions[enum_class] = {
-            enum_class(int(key)): description
-            for key, description in raw_descriptions[section].items()
-        }
-    return descriptions
-
-
-STATUS_DESCRIPTIONS = load_status_descriptions()
-
-
 def parse_status(enum_class, value):
     if value is None:
         return None
@@ -91,10 +67,13 @@ def status_line(label, enum_class, value):
     parsed = parse_status(enum_class, value)
     if parsed is None:
         return f"{label} status: {value} UNKNOWN - Unknown status code."
-    return (
-        f"{label} status: {value} {parsed.name} - "
-        f"{STATUS_DESCRIPTIONS[enum_class][parsed]}"
-    )
+    if issubclass(enum_class, IntFlag) and parsed != enum_class.SUCCESS:
+        flags = [
+            flag for flag in enum_class if flag != enum_class.SUCCESS and flag in parsed
+        ]
+        names = ", ".join(flag.name for flag in flags)
+        return f"{label} status: {value} {names}"
+    return f"{label} status: {value} {parsed.name}"
 
 
 def exit_code_line(exit_code):
@@ -130,10 +109,10 @@ def build_message(
     token_status=None,
     dispatch_status=None,
 ):
-    repository = env("GITHUB_REPOSITORY", "heavyedge/classification-model")
-    ref_name = env("GITHUB_REF_NAME", "")
+    repository = env("GITHUB_REPOSITORY")
+    ref_name = env("GITHUB_REF_NAME")
 
-    job_name = env("KUBERNETES_JOB_NAME", "heavyedge-classification-model")
+    job_name = env("KUBERNETES_JOB_NAME")
 
     body_lines = [
         f"Deployment status: {status}",
@@ -153,12 +132,12 @@ def build_message(
         if line:
             body_lines.append(line)
 
-    model_mode = env("MODEL_MODE", "test")
-    body_lines.append(f"Dry build: {int(model_mode == 'test')}")
-    body_lines.append(f"Push model: {int(model_mode in ('release', 'post'))}")
+    body_lines.append(f"BUILD_MODE: {env('BUILD_MODE')}")
+    body_lines.append(f"DEPLOY_MODE: {env('DEPLOY_MODE')}")
+    body_lines.append(f"DOC_BUILD_MODE: {env('DOC_BUILD_MODE')}")
+    body_lines.append(f"DOC_DEPLOY_MODE: {env('DOC_DEPLOY_MODE')}")
 
     msg = EmailMessage()
-    msg["From"] = env("SMTP_NOTIFY_SENDER", "heavyedge-bot@users.noreply.github.com")
     msg["To"] = env("SMTP_NOTIFY_RECIPIENT")
     msg["Subject"] = f"[{status}] {job_name}"
     msg.set_content("\n".join(body_lines) + "\n")
