@@ -70,8 +70,8 @@ with ProfileData(args.profiles) as file:
     X, _, _ = file[:]
     X /= np.trapezoid(X, x, axis=1)[..., np.newaxis]
 
-y = pd.read_csv(args.labels)["Type"]
-labels = np.sort(y.unique())
+y = pd.read_csv(args.labels)["Type"].to_numpy()
+labels = np.sort(np.unique(y))
 n_classes = len(labels)
 
 outer_fold = StratifiedKFold(n_splits=args.n_splits, shuffle=True, random_state=0)
@@ -90,7 +90,7 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
         len(outer_test_idx),
     )
     X_outer_train = X[outer_train_idx]
-    y_outer_train = y.iloc[outer_train_idx]
+    y_outer_train = y[outer_train_idx]
 
     inner_fold = StratifiedKFold(n_splits=args.n_splits, shuffle=True, random_state=42)
     inner_splits = list(inner_fold.split(X_outer_train, y_outer_train))
