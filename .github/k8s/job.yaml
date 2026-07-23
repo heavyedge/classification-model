@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              memory: "4Gi"
+              memory: "16Gi"
               cpu: "${CPU_REQUEST}"
             limits:
               memory: "16Gi"
@@ -154,8 +154,10 @@ spec:
               value: "${UPSTREAM_REVISION}"
             - name: UPSTREAM_REPO_ID
               value: "${UPSTREAM_REPO_ID}"
-            - name: CPU_REQUEST
-              value: "${CPU_REQUEST}"
+            - name: MAKE_JOBS
+              value: "${MAKE_JOBS}"
+            - name: TRAIN_JOBS
+              value: "${TRAIN_JOBS}"
           volumeMounts:
             - name: postfix-state
               mountPath: /var/run/heavyedge
