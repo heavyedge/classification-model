@@ -22,8 +22,9 @@ class BuildStatus(IntEnum):
 
 class DeployStatus(IntFlag):
     SUCCESS = 0
-    DEPLOY_FAILED = 1
-    DOC_DEPLOY_FAILED = 2
+    SKIPPED = 1
+    DEPLOY_FAILED = 2
+    DOC_DEPLOY_FAILED = 4
 
 
 class TokenStatus(IntEnum):

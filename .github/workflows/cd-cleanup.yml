@@ -125,7 +125,7 @@ jobs:
               [process.env.DEPLOY_CHECK_RUN_ID, process.env.DEPLOY_CONCLUSION],
               [process.env.DOC_DEPLOY_CHECK_RUN_ID, process.env.DOC_DEPLOY_CONCLUSION],
             ].filter(([checkRunId]) => checkRunId);
-            const allowedConclusions = new Set(['success', 'failure']);
+            const allowedConclusions = new Set(['success', 'failure', 'skipped']);
 
             for (const [checkRunId, conclusion] of checks) {
               const normalizedConclusion = allowedConclusions.has(conclusion)

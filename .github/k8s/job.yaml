@@ -44,8 +44,11 @@ spec:
 
               python .github/k8s/send-email.py --status "Started" || true
 
+              build_log_file="$(mktemp)"
               build_status=0
-              sh .github/k8s/build.sh || build_status=$?
+              sh .github/k8s/build.sh >"$build_log_file" 2>&1 || build_status=$?
+              cat "$build_log_file" || true
+              rm -f "$build_log_file"
               if [ "$build_status" -eq 0 ]; then
                 build_conclusion=success
               else
@@ -57,15 +60,25 @@ spec:
               GITHUB_APP_TOKEN="$(sh .github/k8s/app-token.sh)" || token_status=$?
               export GITHUB_APP_TOKEN
 
-              deploy_status=0
-              sh .github/k8s/deploy.sh || deploy_status=$?
               deploy_conclusion=success
               doc_deploy_conclusion=success
-              if [ $((deploy_status & 1)) -ne 0 ]; then
-                deploy_conclusion=failure
-              fi
-              if [ $((deploy_status & 2)) -ne 0 ]; then
-                doc_deploy_conclusion=failure
+              if [ "$build_status" -ne 0 ]; then
+                deploy_status=1
+                deploy_conclusion=skipped
+                doc_deploy_conclusion=skipped
+                echo "Skipping deployment because the build failed."
+              else
+                deploy_log_file="$(mktemp)"
+                deploy_status=0
+                sh .github/k8s/deploy.sh >"$deploy_log_file" 2>&1 || deploy_status=$?
+                cat "$deploy_log_file" || true
+                rm -f "$deploy_log_file"
+                if [ $((deploy_status & 2)) -ne 0 ]; then
+                  deploy_conclusion=failure
+                fi
+                if [ $((deploy_status & 4)) -ne 0 ]; then
+                  doc_deploy_conclusion=failure
+                fi
               fi
               export DEPLOY_CONCLUSION="$deploy_conclusion"
               export DOC_DEPLOY_CONCLUSION="$doc_deploy_conclusion"
@@ -80,7 +93,7 @@ spec:
               if [ "$token_status" -ne 0 ]; then
                 exit_code=$((exit_code + 2))
               fi
-              if [ "$deploy_status" -ne 0 ]; then
+              if [ $((deploy_status & 6)) -ne 0 ]; then
                 exit_code=$((exit_code + 4))
               fi
               if [ "$dispatch_status" -ne 0 ]; then
