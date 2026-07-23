@@ -6,13 +6,15 @@ N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 TRAIN_JOBS ?= 1
 CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
 
-.PHONY: all model models test clean .FORCE
+.PHONY: all model models examples test clean .FORCE
 
 all: model
 
 model: model/model.pkl
 
 models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/model.$(method).pkl)
+
+examples: $(wildcard examples/v1/*.ipynb)
 
 test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
 	out=$$(mktemp).csv

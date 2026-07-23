@@ -41,3 +41,21 @@ esac
 if ! HEAVYEDGE_TEST_MODE=0 make -j ${MAKE_JOBS} test; then
     exit 3
 fi
+
+make_targets="examples"
+case "${DOC_BUILD_MODE:-test}" in
+  build)
+    if ! HEAVYEDGE_TEST_MODE=0 make -j ${MAKE_JOBS} ${make_targets}; then
+      exit 4
+    fi
+    ;;
+  test)
+    if ! HEAVYEDGE_TEST_MODE=1 make -j ${MAKE_JOBS} ${make_targets}; then
+      exit 4
+    fi
+    ;;
+  *)
+    echo "::error::Unsupported doc build mode: ${DOC_BUILD_MODE}" >&2
+    exit 4
+    ;;
+esac
