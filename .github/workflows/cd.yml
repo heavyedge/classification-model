@@ -373,7 +373,7 @@ jobs:
       - create-checks
       - deploy
 
-    if: ${{ always() && needs.deploy.result == 'failure' }}
+    if: ${{ always() && (needs.create-checks.result == 'failure' || needs.deploy.result == 'failure') }}
 
     runs-on: ubuntu-latest
 
