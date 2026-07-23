@@ -48,4 +48,8 @@ benchmarks/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.c
 	mkdir -p $(@D)
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
+benchmarks/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/CV.%.csv
+	mkdir -p $(@D)
+	python3 $^ --n-bins 5 -o $@
+
 .SECONDARY:
