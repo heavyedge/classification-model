@@ -1,11 +1,9 @@
 import argparse
-import csv
 import logging
-import os
 import pathlib
-import pickle
 
 import numpy as np
+import pandas as pd
 from heavyedge import ProfileData
 from heavyedge_classify.model import minirocket_classifier
 from sklearn.model_selection import StratifiedKFold
@@ -13,11 +11,33 @@ from sklearn.model_selection import StratifiedKFold
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
-N_SPLITS = int(os.getenv("HEAVYEDGE_N_SPLITS", 5))
-
-parser = argparse.ArgumentParser()
-parser.add_argument("profiles", type=pathlib.Path, help="Preprocessed profile data.")
-parser.add_argument("labels", type=pathlib.Path, help="Label npy file")
+parser = argparse.ArgumentParser(
+    description=(
+        "Evaluate a calibrated MiniRocket classifier with nested stratified "
+        "cross-validation. The input profiles are area-normalized, a model is "
+        "trained for each outer fold, and out-of-fold class probabilities are "
+        "written to a CSV file."
+    ),
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    epilog=(
+        "The labels CSV must contain a 'Type' column. The output CSV has one "
+        "column per class (named with the corresponding label) and one row per "
+        "input profile; each value is that profile's out-of-fold probability.\n\n"
+        "Example:\n"
+        "  python cv.py profiles.h5 labels.csv --calibration sigmoid "
+        "--n-splits 5 -o benchmarks/CV.sigmoid.csv"
+    ),
+)
+parser.add_argument(
+    "profiles",
+    type=pathlib.Path,
+    help="HDF5 file containing preprocessed profile data.",
+)
+parser.add_argument(
+    "labels",
+    type=pathlib.Path,
+    help="CSV file containing the true class labels in its 'Type' column.",
+)
 parser.add_argument(
     "--calibration",
     choices=[
@@ -28,9 +48,21 @@ parser.add_argument(
         "isotonic_ovo",
     ],
     required=True,
-    help="Calibration method",
+    help="Probability calibration method used by the classifier.",
 )
-parser.add_argument("-o", "--out", type=pathlib.Path, help="Output pkl file")
+parser.add_argument(
+    "--n-splits",
+    type=int,
+    required=True,
+    help="Number of stratified folds for both the outer and inner cross-validation.",
+)
+parser.add_argument(
+    "-o",
+    "--out",
+    type=pathlib.Path,
+    required=True,
+    help="Destination CSV file for the out-of-fold class probabilities.",
+)
 args = parser.parse_args()
 
 with ProfileData(args.profiles) as file:
@@ -38,34 +70,29 @@ with ProfileData(args.profiles) as file:
     X, _, _ = file[:]
     X /= np.trapezoid(X, x, axis=1)[..., np.newaxis]
 
-with open(args.labels, "r") as f:
-    reader = csv.reader(f)
-    # Burn first row as header
-    next(reader)
-    y = np.array([row[0] for row in reader])
+y = pd.read_csv(args.labels)["Type"]
+labels = np.sort(y.unique())
+n_classes = len(labels)
 
-n_classes = len(np.unique(y))
-
-outer_fold = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=0)
+outer_fold = StratifiedKFold(n_splits=args.n_splits, shuffle=True, random_state=0)
 outer_splits = list(outer_fold.split(X, y))
 
 log.info("Calibration method: %s", args.calibration)
 
-models = []
 y_prob_oof = np.full((len(y), n_classes), np.nan)
 
 for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
     log.info(
         "  Outer fold %d/%d (train=%d, test=%d)",
         fold_idx + 1,
-        N_SPLITS,
+        args.n_splits,
         len(outer_train_idx),
         len(outer_test_idx),
     )
     X_outer_train = X[outer_train_idx]
-    y_outer_train = y[outer_train_idx]
+    y_outer_train = y.iloc[outer_train_idx]
 
-    inner_fold = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=42)
+    inner_fold = StratifiedKFold(n_splits=args.n_splits, shuffle=True, random_state=42)
     inner_splits = list(inner_fold.split(X_outer_train, y_outer_train))
 
     model = minirocket_classifier(
@@ -77,18 +104,8 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
     model.fit(X_outer_train, y_outer_train)
 
     y_prob_oof[outer_test_idx] = model.predict_proba(X[outer_test_idx])
-    models.append(model)
-    log.info("  Outer fold %d/%d done", fold_idx + 1, N_SPLITS)
+    log.info("  Outer fold %d/%d done", fold_idx + 1, args.n_splits)
 
 log.info("Method %s complete", args.calibration)
 
-with open(args.out, "wb") as f:
-    pickle.dump(
-        {
-            "method": args.calibration,
-            "outer_splits": outer_splits,
-            "models": models,
-            "y_prob_oof": y_prob_oof,
-        },
-        f,
-    )
+pd.DataFrame(y_prob_oof, columns=labels).to_csv(args.out, index=False)

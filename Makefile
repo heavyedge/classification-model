@@ -19,7 +19,7 @@ test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
 	heavyedge --log-level=INFO classify-predict $^ -o $$out
 
 clean:
-	rm -rf _temp models model/*.pkl
+	rm -rf _temp benchmarks models model/*.pkl
 
 _temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
 	mkdir -p $(@D)
@@ -43,5 +43,9 @@ models/v1/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 model/model.pkl: models/v1/model.sigmoid.pkl
 	mkdir -p $(@D)
 	cp $^ $@
+
+benchmarks/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+	mkdir -p $(@D)
+	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
 .SECONDARY:
