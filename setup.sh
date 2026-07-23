@@ -5,7 +5,7 @@ pip install uv
 mkdir -p ./_data/v1/
 
 (
-    uv pip install --system -r requirements.txt
+    uv pip install --system -r requirements.txt -r examples/requirements.txt
 ) &
 requirements_pid=$!
 
