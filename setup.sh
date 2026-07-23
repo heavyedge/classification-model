@@ -11,7 +11,7 @@ requirements_pid=$!
 
 (
     curl -LsSf https://hf.co/cli/install.sh | bash
-    "$HOME/.local/bin/hf" auth login --token "$HF_TOKEN"
+    "$HOME/.local/bin/hf" auth login --token "$HUGGINGFACE_TOKEN"
     if [ "${HEAVYEDGE_TEST_MODE:-}" = "1" ]; then
         profiles_include="v1/profiles/dataset5/*-Mean.h5"
     else

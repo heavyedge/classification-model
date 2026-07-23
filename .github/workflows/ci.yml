@@ -55,7 +55,7 @@ jobs:
 
         - run: HEAVYEDGE_TEST_MODE=1 ./setup.sh
           env:
-            HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+            HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
             LABELS_V1_GDRIVE: ${{ secrets.LABELS_V1_GDRIVE }}
 
         - name: build models

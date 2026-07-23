@@ -31,7 +31,7 @@ pip install -r requirements.txt
 Run the following commands to download the profile dataset and labels in the `_data` directory.
 
 ```sh
-export HF_TOKEN="..."
+export HUGGINGFACE_TOKEN="..."
 export LABELS_V1_GDRIVE="..."
 ./setup.sh
 ```
