@@ -17,7 +17,7 @@ case "${BUILD_MODE:-test}" in
     overlay_dir="$(mktemp -d)"
     trap 'rm -rf "$overlay_dir"' EXIT INT TERM
     cp -a model/. "$overlay_dir/"
-    if ! hf download "${UPSTREAM_REPO_ID}" \
+    if ! "$HOME/.local/bin/hf" download "${UPSTREAM_REPO_ID}" \
         --repo-type model \
         --revision "${UPSTREAM_REVISION}" \
         --token "${HUGGINGFACE_TOKEN}" \

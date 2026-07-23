@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export PATH="$PATH:$HOME/.local/bin"
-
 pip install uv
 
 mkdir -p ./_data/v1/
@@ -13,13 +11,13 @@ requirements_pid=$!
 
 (
     curl -LsSf https://hf.co/cli/install.sh | bash
-    hf auth login --token "$HUGGINGFACE_TOKEN"
+    "$HOME/.local/bin/hf" auth login --token "$HUGGINGFACE_TOKEN"
     if [ "${HEAVYEDGE_TEST_MODE:-}" = "1" ]; then
         profiles_include="v1/profiles/dataset5/*-Mean.h5"
     else
         profiles_include="v1/profiles/**/*-Mean.h5"
     fi
-    hf download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc0 --include "$profiles_include" --local-dir _data/
+    "$HOME/.local/bin/hf" download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc0 --include "$profiles_include" --local-dir _data/
 ) &
 profiles_pid=$!
 
