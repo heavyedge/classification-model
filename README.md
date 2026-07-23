@@ -5,7 +5,9 @@
 Edge classification model for [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/).
 
 Provides:
- - Edge classification models.
+  - Edge classification models.
+  - Benchmark results of different models.
+  - Example notebooks.
 
 ## Usage
 
@@ -95,6 +97,26 @@ heavyedge classify-predict <input.h5> model.pkl -o <output>
 
 Refer to the [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/) documentation.
 
+### Acquiring the built examples
+
+The benchmark results are visualized as notebooks in the `examples` directory.
+
+The notebook outputs are stripped before being stored in this repository.
+To check their outputs, you must acquire the built example notebooks.
+
+You can either download the built notebooks from the [GitHub release](https://github.com/heavyedge/classification-model/releases) artifacts, or build the notebooks yourself if you have acquired the preprocessed data.
+
+#### Building the notebooks
+
+You need:
+
+- `make`
+
+```sh
+pip install -r examples/requirements.txt
+make examples
+```
+
 ## Contributing
 
 ### Configuring git
@@ -129,11 +151,13 @@ After downloading the dataset and training `model` and `models`, build the image
   - Includes essential environment for inference.
 - `base` (default)
   - Includes the trained model and other models (`model`, `models`).
+  - Includes the benchmarks and built examples (`benchmarks`, `examples`).
   - Includes essential environment for inference.
   - Includes non-hidden source files.
 - `dev`
   - Includes the dataset (`_data`).
   - Includes the trained model and other models (`model`, `models`).
+  - Includes the benchmarks and built examples (`benchmarks`, `examples`).
   - Includes essential environment for inference.
   - Includes all source files.
 
