@@ -53,7 +53,7 @@ if [ "${DOC_DEPLOY_MODE:-false}" = "true" ]; then
 
       if ! http_status="$(curl -sS -o "$response_file" -w '%{http_code}' -X POST \
           -H 'Accept: application/vnd.github+json' \
-          -H 'Authorization: Bearer ${GITHUB_APP_TOKEN}' \
+          -H "Authorization: Bearer ${GITHUB_APP_TOKEN}" \
           -H 'Content-Type: application/gzip' \
           -H 'X-GitHub-Api-Version: 2022-11-28' \
           --data-binary "@${archive_file}" "${upload_url}?name=${asset_name}")" || [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
