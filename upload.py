@@ -28,7 +28,7 @@ VERSION = args.tag
 MAJOR_VERSION = f"v{version.major}"
 REPO = f"jeesoo9595/heavyedge-classify-{MAJOR_VERSION}"
 
-shutil.rmtree("model/__pycache__", ignore_errors=True)
+shutil.rmtree("models/__pycache__", ignore_errors=True)
 
 api.create_repo(
     repo_id=REPO,
@@ -37,7 +37,7 @@ api.create_repo(
     exist_ok=True,
 )
 api.upload_folder(
-    folder_path="model",
+    folder_path=f"models/{MAJOR_VERSION}",
     repo_id=REPO,
     repo_type="model",
     commit_message=f"Upload version {VERSION}",

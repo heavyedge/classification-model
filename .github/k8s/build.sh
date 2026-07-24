@@ -6,7 +6,7 @@ if ! ./setup.sh; then
   exit 1
 fi
 
-make_targets="model"
+make_targets="models"
 case "${BUILD_MODE:-test}" in
   build)
     if ! HEAVYEDGE_TEST_MODE=0 make -j ${MAKE_JOBS} ${make_targets}; then
@@ -16,16 +16,16 @@ case "${BUILD_MODE:-test}" in
   pull)
     overlay_dir="$(mktemp -d)"
     trap 'rm -rf "$overlay_dir"' EXIT INT TERM
-    cp -a model/. "$overlay_dir/"
+    cp -a models/. "$overlay_dir/"
     if ! "$HOME/.local/bin/hf" download "${UPSTREAM_REPO_ID}" \
         --repo-type model \
         --revision "${UPSTREAM_REVISION}" \
         --token "${HUGGINGFACE_TOKEN}" \
-        --local-dir model; then
+        --local-dir models; then
       exit 2
     fi
-    cp -a "$overlay_dir/." model/
-    rm -rf model/.cache/huggingface
+    cp -a "$overlay_dir/." models/
+    rm -rf models/.cache/huggingface
     ;;
   test)
     if ! HEAVYEDGE_TEST_MODE=1 make -j ${MAKE_JOBS} ${make_targets}; then
