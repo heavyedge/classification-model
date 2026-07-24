@@ -44,7 +44,11 @@ models/v1/models/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
 
-benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+benchmarks/v1/splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+	mkdir -p $(@D)
+	python3 $^ --n-splits $(N_SPLITS) -o $@
+
+benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv benchmarks/v1/splits.csv
 	mkdir -p $(@D)
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
