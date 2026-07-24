@@ -44,15 +44,23 @@ models/v1/models/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
 
-benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+benchmarks/v1/splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
+	python3 $^ --n-splits $(N_SPLITS) -o $@
+
+benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv benchmarks/v1/splits.csv
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/v1/CV.%.csv
-	mkdir -p $(@D)
 	python3 $^ --n-bins 5 -o $@
 
+benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1/labels.csv benchmarks/v1/splits.csv benchmarks/v1/CV.%.csv
+	python3 $^ -o $@
+
 examples/v1/calibration_curve.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationCurve.$(method).csv) .FORCE
+	jupyter nbconvert --to notebook --execute --inplace $@
+
+examples/v1/calibration_scores.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationScores.$(method).csv) .FORCE
 	jupyter nbconvert --to notebook --execute --inplace $@
 
 .FORCE:  # dummy target to force execution of dependent targets

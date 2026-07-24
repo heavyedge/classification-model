@@ -39,6 +39,11 @@ parser.add_argument(
     help="CSV file containing the true class labels in its 'Type' column.",
 )
 parser.add_argument(
+    "split",
+    type=pathlib.Path,
+    help="CSV file containing the train/test split flags (0 for train, 1 for test).",
+)
+parser.add_argument(
     "--calibration",
     choices=[
         "sigmoid",
@@ -54,7 +59,7 @@ parser.add_argument(
     "--n-splits",
     type=int,
     required=True,
-    help="Number of stratified folds for both the outer and inner cross-validation.",
+    help="Number of stratified folds for inner cross-validation.",
 )
 parser.add_argument(
     "-o",
@@ -74,8 +79,11 @@ y = pd.read_csv(args.labels)["Type"].to_numpy()
 labels = np.sort(np.unique(y))
 n_classes = len(labels)
 
-outer_fold = StratifiedKFold(n_splits=args.n_splits, shuffle=True, random_state=0)
-outer_splits = list(outer_fold.split(X, y))
+split_flags = pd.read_csv(args.split).to_numpy()
+outer_splits = [
+    (np.where(split_flags[:, i] == 0)[0], np.where(split_flags[:, i] == 1)[0])
+    for i in range(split_flags.shape[1])
+]
 
 log.info("Calibration method: %s", args.calibration)
 
@@ -85,7 +93,7 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
     log.info(
         "  Outer fold %d/%d (train=%d, test=%d)",
         fold_idx + 1,
-        args.n_splits,
+        len(outer_splits),
         len(outer_train_idx),
         len(outer_test_idx),
     )
@@ -104,7 +112,7 @@ for fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
     model.fit(X_outer_train, y_outer_train)
 
     y_prob_oof[outer_test_idx] = model.predict_proba(X[outer_test_idx])
-    log.info("  Outer fold %d/%d done", fold_idx + 1, args.n_splits)
+    log.info("  Outer fold %d/%d done", fold_idx + 1, len(outer_splits))
 
 log.info("Method %s complete", args.calibration)
 
