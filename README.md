@@ -169,4 +169,5 @@ N.N.N[{a|b|rc}N][.postN][.devN]
   - Examples are not built and not uploaded as release artifacts.
 
 > **NOTE**: The major version is raised when the models are changed in a backward-incompatible way.
-> When the major version is raised, trained models are deployed in the new repository, e.g., `heavyedge-classify-v1`, `heavyedge-classify-v2`, and so on.
+> When the major version is raised, trained models are deployed in the new repository.
+> For example, `models/v1` is uploaded to `heavyedge-classify-v1`, `models/v2` to `heavyedge-classify-v2`, and so on.
