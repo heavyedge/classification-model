@@ -1,7 +1,7 @@
 .ONESHELL:
 
 DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename))
-PROFILES_v1 = $(shell ls _data/v1/profiles/$(1)/*-Mean.h5)
+PROFILES_v1 = $(shell ls _data/v1/mean_profiles/$(1)/*.h5)
 N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 TRAIN_JOBS ?= 1
 CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
@@ -16,7 +16,7 @@ models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/model.$(method).pkl
 
 examples: $(wildcard examples/v1/*.ipynb)
 
-test: _data/v1/profiles/dataset5/001-Mean.h5 model/model.pkl
+test: _data/v1/mean_profiles/dataset5/001.h5 model/model.pkl
 	out=$$(mktemp).csv
 	trap 'rm -f $$out' EXIT INT TERM
 	heavyedge --log-level=INFO classify-predict $^ -o $$out

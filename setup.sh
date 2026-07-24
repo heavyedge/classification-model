@@ -13,11 +13,17 @@ requirements_pid=$!
     curl -LsSf https://hf.co/cli/install.sh | bash
     "$HOME/.local/bin/hf" auth login --token "$HUGGINGFACE_TOKEN"
     if [ "${HEAVYEDGE_TEST_MODE:-}" = "1" ]; then
-        profiles_include="v1/profiles/dataset5/*-Mean.h5"
+        profiles="v1/mean_profiles/dataset5.tar.gz"
     else
-        profiles_include="v1/profiles/**/*-Mean.h5"
+        profiles="v1/mean_profiles/*.tar.gz"
     fi
-    "$HOME/.local/bin/hf" download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc0 --include "$profiles_include" --local-dir _data/
+    "$HOME/.local/bin/hf" download jeesoo9595/heavyedge-profiles --repo-type dataset --revision v1.0.0rc1 --include "$profiles" --local-dir _data/
+    for dataset in _data/v1/mean_profiles/*.tar.gz; do
+        stem=$(basename "$dataset" .tar.gz)
+        dirname=_data/v1/mean_profiles/"$stem"
+        mkdir -p "$dirname"
+        tar -xzf "$dataset" -C "$dirname"
+    done
 ) &
 profiles_pid=$!
 
