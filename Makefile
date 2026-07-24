@@ -49,12 +49,13 @@ benchmarks/v1/splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp
 	python3 $^ --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv benchmarks/v1/splits.csv
-	mkdir -p $(@D)
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/v1/CV.%.csv
-	mkdir -p $(@D)
 	python3 $^ --n-bins 5 -o $@
+
+benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1/labels.csv benchmarks/v1/splits.csv benchmarks/v1/CV.%.csv
+	python3 $^ -o $@
 
 examples/v1/calibration_curve.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationCurve.$(method).csv) .FORCE
 	jupyter nbconvert --to notebook --execute --inplace $@
