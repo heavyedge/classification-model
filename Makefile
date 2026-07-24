@@ -23,6 +23,7 @@ test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/models/minirocket.$(m
 	done
 
 clean:
+	shopt -s globstar nullglob
 	rm -rf _temp benchmarks models/**/*.pkl
 
 _temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))

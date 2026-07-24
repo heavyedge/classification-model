@@ -2,6 +2,7 @@ _data
 _temp
 benchmarks
 models/**/*.pkl
+models/**/.gitattributes
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
