@@ -37,7 +37,7 @@ api.create_repo(
     exist_ok=True,
 )
 api.upload_folder(
-    folder_path="models",
+    folder_path=f"models/{MAJOR_VERSION}",
     repo_id=REPO,
     repo_type="model",
     commit_message=f"Upload version {VERSION}",

@@ -43,7 +43,7 @@ export LABELS_V1_GDRIVE="..."
 The classification models trained by this project can be acquired by downloading them from the [model repository](https://huggingface.co/jeesoo9595/heavyedge-classify-v1).
 Alternatively, you can train the models yourself if you have downloaded the dataset.
 
-Either approach creates the trained models in the `models` directory.
+Either approach creates the trained models in the `models/v*` directories.
 
 #### Direct download
 
@@ -54,7 +54,7 @@ You need:
 Run the following command:
 
 ```sh
-hf download jeesoo9595/heavyedge-classify-v1 --repo-type model --local-dir models
+hf download jeesoo9595/heavyedge-classify-v1 --repo-type model --local-dir models/v1
 ```
 
 #### Training the models
@@ -80,7 +80,7 @@ make test
 Once a model is trained, you can pass it to the `heavyedge` command line to perform inference.
 
 ```sh
-heavyedge classify-predict <input.h5> models/model.sigmoid.pkl -o <output>
+heavyedge classify-predict <input.h5> models/v1/models/minirocket.sigmoid.pkl -o <output>
 ```
 
 Refer to the [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/) documentation.

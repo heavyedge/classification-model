@@ -17,5 +17,5 @@ pip install -r requirements.txt
 Usage:
 
 ```
-heavyedge classify-predict <input.h5> model.sigmoid.pkl -o <output>
+heavyedge classify-predict <input.h5> models/minirocket.sigmoid.pkl -o <output>
 ```
