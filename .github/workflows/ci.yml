@@ -115,7 +115,7 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/mean_profiles/dataset5:/workdir heavyedge-classification-models:infer-ci sh -c "uv pip install --system -r /app/models/v1/requirements.txt && heavyedge classify-predict 001.h5 /app/models/v1/models/minirocket.sigmoid.pkl -o $(mktemp).csv"
+            docker run --rm -w /workdir -v $PWD/_data/v1/mean_profiles/dataset5:/workdir heavyedge-classification-models:infer-ci sh -c "uv pip install --system -r /app/models/v1/requirements.txt && heavyedge classify-predict 001.h5 /app/models/v1/classifiers/minirocket.sigmoid.pkl -o $(mktemp).csv"
 
   image-base:
 
@@ -154,7 +154,7 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm -w /workdir -v $PWD/_data/v1/mean_profiles/dataset5:/workdir heavyedge-classification-models:base-ci sh -c "uv pip install --system -r /app/models/v1/requirements.txt && heavyedge classify-predict 001.h5 /app/models/v1/models/minirocket.sigmoid.pkl -o $(mktemp).csv"
+            docker run --rm -w /workdir -v $PWD/_data/v1/mean_profiles/dataset5:/workdir heavyedge-classification-models:base-ci sh -c "uv pip install --system -r /app/models/v1/requirements.txt && heavyedge classify-predict 001.h5 /app/models/v1/classifiers/minirocket.sigmoid.pkl -o $(mktemp).csv"
 
   image-dev:
 
@@ -193,4 +193,4 @@ jobs:
 
         - name: Test Docker image
           run: |
-            docker run --rm heavyedge-classification-models:dev-ci sh -c "uv pip install --system -r requirements.txt && heavyedge classify-predict _data/v1/mean_profiles/dataset5/001.h5 ./models/v1/models/minirocket.sigmoid.pkl -o $(mktemp).csv"
+            docker run --rm heavyedge-classification-models:dev-ci sh -c "uv pip install --system -r requirements.txt && heavyedge classify-predict _data/v1/mean_profiles/dataset5/001.h5 ./models/v1/classifiers/minirocket.sigmoid.pkl -o $(mktemp).csv"

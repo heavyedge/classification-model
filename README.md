@@ -80,7 +80,7 @@ make test
 Once a model is trained, you can pass it to the `heavyedge` command line to perform inference.
 
 ```sh
-heavyedge classify-predict <input.h5> models/v1/models/minirocket.sigmoid.pkl -o <output>
+heavyedge classify-predict <input.h5> models/v1/classifiers/minirocket.sigmoid.pkl -o <output>
 ```
 
 Refer to the [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/) documentation.

@@ -10,11 +10,11 @@ CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
 
 all: models examples
 
-models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/models/minirocket.$(method).pkl)
+models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
 
 examples: $(wildcard examples/v1/*.ipynb)
 
-test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/models/minirocket.$(method).pkl)
+test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
 	@out=$$(mktemp).csv
 	trap 'rm -f $$out' EXIT INT TERM
 	for model in $^; do
@@ -41,7 +41,7 @@ _temp/v1/canonical.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dat
 _temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/canonical.csv
 	python3 $^ -o $@
 
-models/v1/models/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+models/v1/classifiers/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
 
