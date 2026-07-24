@@ -1,28 +1,29 @@
 .ONESHELL:
 
-DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/dataset* | xargs -n 1 basename))
+DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/mean_profiles/dataset* | xargs -n 1 basename))
 PROFILES_v1 = $(shell ls _data/v1/mean_profiles/$(1)/*.h5)
 N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 TRAIN_JOBS ?= 1
 CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
 
-.PHONY: all model models examples test clean .FORCE
+.PHONY: all models examples test clean .FORCE
 
-all: model
+all: models examples
 
-model: model/model.pkl
-
-models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/model.$(method).pkl)
+models: $(foreach method,$(CALIBRATION_METHODS_v1),models/model.$(method).pkl)
 
 examples: $(wildcard examples/v1/*.ipynb)
 
-test: _data/v1/mean_profiles/dataset5/001.h5 model/model.pkl
-	out=$$(mktemp).csv
+test: $(foreach method,$(CALIBRATION_METHODS_v1),models/model.$(method).pkl)
+	@out=$$(mktemp).csv
 	trap 'rm -f $$out' EXIT INT TERM
-	heavyedge --log-level=INFO classify-predict $^ -o $$out
+	for model in $^; do
+		echo "Testing $$model..."
+		heavyedge --log-level=INFO classify-predict _data/v1/mean_profiles/dataset5/001.h5 $$model -o $$out
+	done
 
 clean:
-	rm -rf _temp benchmarks models model/*.pkl
+	rm -rf _temp benchmarks models/*.pkl
 
 _temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
 	mkdir -p $(@D)
@@ -39,13 +40,9 @@ _temp/v1/canonical.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dat
 _temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/canonical.csv
 	python3 $^ -o $@
 
-models/v1/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+models/model.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
-
-model/model.pkl: models/v1/model.sigmoid.pkl
-	mkdir -p $(@D)
-	cp $^ $@
 
 benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)

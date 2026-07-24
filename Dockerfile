@@ -9,7 +9,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY model ./model
+COPY models ./models
 COPY README.md LICENSE ./
 
 ARG IMAGE_CREATED

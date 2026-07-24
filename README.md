@@ -2,7 +2,7 @@
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-Model-orange?logo=huggingface)](https://huggingface.co/jeesoo9595/heavyedge-classify-v1)
 [![GitHub repository](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/heavyedge/classification-model)
 
-Edge classification model for [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/).
+Edge classification models for [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/).
 
 Provides:
   - Edge classification models.
@@ -11,7 +11,7 @@ Provides:
 
 ## Usage
 
-This repository provides scripts to train classification models and notebooks to visualize the model performance.
+This repository provides scripts to train classification models and notebooks to visualize the model performances.
 
 ### Cloning the repository
 
@@ -38,12 +38,12 @@ export LABELS_V1_GDRIVE="..."
 ./setup.sh
 ```
 
-### Acquiring the model
+### Acquiring the models
 
-The classification model trained by this project can be acquired by downloading it from the [model repository](https://huggingface.co/jeesoo9595/heavyedge-classify-v1).
-Alternatively, you can train the model yourself if you have downloaded the dataset.
+The classification models trained by this project can be acquired by downloading them from the [model repository](https://huggingface.co/jeesoo9595/heavyedge-classify-v1).
+Alternatively, you can train the models yourself if you have downloaded the dataset.
 
-Either approach creates the trained model in the `model` directory.
+Either approach creates the trained models in the `models` directory.
 
 #### Direct download
 
@@ -54,10 +54,10 @@ You need:
 Run the following command:
 
 ```sh
-hf download jeesoo9595/heavyedge-classify-v1 --repo-type model --local-dir model
+hf download jeesoo9595/heavyedge-classify-v1 --repo-type model --local-dir models
 ```
 
-#### Training the model
+#### Training the models
 
 You need:
 
@@ -66,33 +66,21 @@ You need:
 Run the following command:
 
 ```sh
-make model
+make models
 ```
 
-You can test the trained model by running:
+You can test the trained models by running:
 
 ```sh
 make test
 ```
 
-### Training other models
-
-This repository defines several models with different architectures and hyperparameters, but only the best model is stored in `model` directory and published to the model repository.
-
-To train the other models, run:
-
-```sh
-make models
-```
-
-The resulting models are saved in the `models` directory.
-
 ### Using the trained model
 
-Once a model is trained (either in `model` or `models` directory), you can pass it to the `heavyedge` command line to perform inference.
+Once a model is trained, you can pass it to the `heavyedge` command line to perform inference.
 
 ```sh
-heavyedge classify-predict <input.h5> model.pkl -o <output>
+heavyedge classify-predict <input.h5> models/model.sigmoid.pkl -o <output>
 ```
 
 Refer to the [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/) documentation.
@@ -137,26 +125,26 @@ Setting the `HEAVYEDGE_TEST_MODE` environment variable to `1` downloades and tra
 ```sh
 export HEAVYEDGE_TEST_MODE=1
 ./setup.sh
-make model test
+make models examples test
 ```
 
 ### Building the container image
 
 The `Dockerfile` is provided to facilitate model distribution without sharing secrets.
 
-After downloading the dataset and training `model` and `models`, build the image with one of the following targets:
+After downloading the dataset and training the models, build the image with one of the following targets:
 
 - `infer`
-  - Includes the trained model (`model`).
+  - Includes the trained models (`models`).
   - Includes essential environment for inference.
 - `base` (default)
-  - Includes the trained model and other models (`model`, `models`).
+  - Includes the trained models (`models`).
   - Includes the benchmarks and built examples (`benchmarks`, `examples`).
   - Includes essential environment for inference.
   - Includes non-hidden source files.
 - `dev`
   - Includes the dataset (`_data`).
-  - Includes the trained model and other models (`model`, `models`).
+  - Includes the trained models (`models`).
   - Includes the benchmarks and built examples (`benchmarks`, `examples`).
   - Includes essential environment for inference.
   - Includes all source files.
@@ -170,15 +158,15 @@ N.N.N[{a|b|rc}N][.postN][.devN]
 ```
 
 - Final release and pre-release (`N.N.N[{a|b|rc}N]`):
-  - Model is re-trained and deployed to HuggingFace.
-  - Examples are re-built using the new model and uploaded as release artifacts.
+  - Models are re-trained and deployed to HuggingFace.
+  - Examples are re-built using the new models and uploaded as release artifacts.
 - Post-release (`*.postN`):
-  - Model is deployed to HuggingFace without re-building.
+  - Models are deployed to HuggingFace without re-building.
     This means that only the metadata will change.
-  - Examples are re-built using the previous model and uploaded as release artifacts.
+  - Examples are re-built using the previous models and uploaded as release artifacts.
 - Developmental release (`*.devN`):
-  - Model is not built and not deployed to HuggingFace.
+  - Models are not built and not deployed to HuggingFace.
   - Examples are not built and not uploaded as release artifacts.
 
-> **NOTE**: The major version is raised when the model is changed in a backward-incompatible way.
-> When the major version is raised, trained model is deployed in the new repository, e.g., `heavyedge-classify-v1`, `heavyedge-classify-v2`, and so on.
+> **NOTE**: The major version is raised when the models are changed in a backward-incompatible way.
+> When the major version is raised, trained models are deployed in the new repository, e.g., `heavyedge-classify-v1`, `heavyedge-classify-v2`, and so on.

@@ -24,6 +24,7 @@ requirements_pid=$!
         mkdir -p "$dirname"
         tar -xzf "$dataset" -C "$dirname"
     done
+    rm -f _data/v1/mean_profiles/*.tar.gz
 ) &
 profiles_pid=$!
 
