@@ -60,6 +60,9 @@ benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1
 examples/v1/calibration_curve.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationCurve.$(method).csv) .FORCE
 	jupyter nbconvert --to notebook --execute --inplace $@
 
+examples/v1/calibration_scores.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationScores.$(method).csv) .FORCE
+	jupyter nbconvert --to notebook --execute --inplace $@
+
 .FORCE:  # dummy target to force execution of dependent targets
 
 .SECONDARY:
