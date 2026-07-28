@@ -24,7 +24,7 @@ test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocke
 
 clean:
 	shopt -s globstar nullglob
-	rm -rf _temp benchmarks models/**/*.pkl
+	rm -rf _temp benchmarks examples/**/*.h5 models/**/*.pkl
 
 _temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
 	mkdir -p $(@D)
@@ -45,18 +45,32 @@ models/v1/classifiers/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels
 	mkdir -p $(@D)
 	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
 
-benchmarks/v1/splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
+_temp/v1/cv-splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
 	mkdir -p $(@D)
 	python3 $^ --n-splits $(N_SPLITS) -o $@
 
-benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv benchmarks/v1/splits.csv
+benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv _temp/v1/cv-splits.csv
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/v1/CV.%.csv
 	python3 $^ --n-bins 5 -o $@
 
-benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1/labels.csv benchmarks/v1/splits.csv benchmarks/v1/CV.%.csv
+benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1/labels.csv _temp/v1/cv-splits.csv benchmarks/v1/CV.%.csv
 	python3 $^ -o $@
+
+examples/v1/profiles.h5: \
+_data/v1/mean_profiles/dataset1/013.h5 \
+_data/v1/mean_profiles/dataset5/013.h5 \
+_data/v1/mean_profiles/dataset5/033.h5 \
+_data/v1/mean_profiles/dataset5/016.h5 \
+_data/v1/mean_profiles/dataset2/017.h5 \
+_data/v1/mean_profiles/dataset2/356.h5 \
+_data/v1/mean_profiles/dataset1/027.h5
+	mkdir -p $(@D)
+	heavyedge merge $^ -o $@
+
+examples/v1/profiles.ipynb: examples/v1/profiles.h5
+	jupyter nbconvert --to notebook --execute --inplace $@
 
 examples/v1/calibration_curve.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationCurve.$(method).csv) .FORCE
 	jupyter nbconvert --to notebook --execute --inplace $@
