@@ -50,6 +50,7 @@ _temp/v1/cv-splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v
 	python3 $^ --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv _temp/v1/cv-splits.csv
+	mkdir -p $(@D)
 	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
 
 benchmarks/v1/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/v1/CV.%.csv
