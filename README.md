@@ -1,5 +1,5 @@
 # HeavyEdge-Classify Model
-[![HuggingFace](https://img.shields.io/badge/HuggingFace-Model-orange?logo=huggingface)](https://huggingface.co/heavyedge/profile-classifier-v1)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Model-orange?logo=huggingface)](https://huggingface.co/heavyedge/classifier-v1)
 [![GitHub repository](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/heavyedge/classification-model)
 
 Edge classification models for [HeavyEdge-Classify](https://pypi.org/project/heavyedge-classify/).
@@ -40,7 +40,7 @@ export LABELS_V1_GDRIVE="..."
 
 ### Acquiring the models
 
-The classification models trained by this project can be acquired by downloading them from the [model repository](https://huggingface.co/heavyedge/profile-classifier-v1).
+The classification models trained by this project can be acquired by downloading them from the [model repository](https://huggingface.co/heavyedge/classifier-v1).
 Alternatively, you can train the models yourself if you have downloaded the dataset.
 
 Either approach creates the trained models in the `models/v*` directories.
@@ -54,7 +54,7 @@ You need:
 Run the following command:
 
 ```sh
-hf download heavyedge/profile-classifier-v1 --repo-type model --local-dir models/v1
+hf download heavyedge/classifier-v1 --repo-type model --local-dir models/v1
 ```
 
 #### Training the models

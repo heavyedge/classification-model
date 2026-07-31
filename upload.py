@@ -26,7 +26,7 @@ api = HfApi(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 VERSION = args.tag
 MAJOR_VERSION = f"v{version.major}"
-REPO = f"heavyedge/profile-classifier-{MAJOR_VERSION}"
+REPO = f"heavyedge/classifier-{MAJOR_VERSION}"
 
 shutil.rmtree("models/__pycache__", ignore_errors=True)
 
