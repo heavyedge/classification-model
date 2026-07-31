@@ -63,7 +63,7 @@ def main():
             elif version.post is not None:
                 build_mode = "pull"
                 upstream_revision = parse_tag(args.ref_name, version)
-                upstream_repo_id = f"jeesoo9595/heavyedge-classify-v{version.major}"
+                upstream_repo_id = f"heavyedge/profile-classifier-v{version.major}"
                 deploy_mode = "true"
                 doc_build_mode = "build"
                 doc_deploy_mode = "true"

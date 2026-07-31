@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- v1
+  - Model: `heavyedge-classify==1.4.0`
+  - Dataset: `heavyedge/profiles:v1.0.0rc3`
+
 ### Added
 
 - `examples/v1/profiles.ipynb` is added.
+
+### Changed
+
+- Modified profile dataset to `heavyedge/profiles:v1.0.0rc3`.
+- HuggingFace repository is now `heavyedge/profile-classifier-v*`.
 
 ## [v1.0.0a1] - 2026-07-24
 
