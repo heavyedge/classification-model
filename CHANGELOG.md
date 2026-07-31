@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified profile dataset to `heavyedge/profiles:v1.0.0rc3`.
 - HuggingFace repository is now `heavyedge/classifier-v*`.
 
+### Fixed
+
+- `numpy < 2.4.0` is specified to avoid error.
+
 ## [v1.0.0a1] - 2026-07-24
 
 ### Changed

@@ -1,3 +1,4 @@
+numpy < 2.4.0
 pandas
 heavyedge >= 1.8.0
 heavyedge-classify==1.4.0
