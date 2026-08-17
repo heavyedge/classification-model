@@ -157,17 +157,13 @@ This repository follows semantic versioning with [Python version specifiers](htt
 N.N.N[{a|b|rc}N][.postN][.devN]
 ```
 
-- Final release and pre-release (`N.N.N[{a|b|rc}N]`):
-  - Models are re-trained and deployed to HuggingFace.
-  - Examples are re-built using the new models and uploaded as release artifacts.
-- Post-release (`*.postN`):
-  - Models are deployed to HuggingFace without re-building.
-    This means that only the metadata will change.
-  - Examples are re-built using the previous models and uploaded as release artifacts.
-- Developmental release (`*.devN`):
-  - Models are not built and not deployed to HuggingFace.
-  - Examples are not built and not uploaded as release artifacts.
+The following rules apply to the final release versions:
 
-> **NOTE**: The major version is raised when the models are changed in a backward-incompatible way.
-> When the major version is raised, trained models are deployed in the new repository.
-> For example, `models/v1` is uploaded to `heavyedge-classify-v1`, `models/v2` to `heavyedge-classify-v2`, and so on.
+- Major version is raised when the model API is changed in a backwards-incompatible way.
+- Minor version is raised when the models are trained with new dataset.
+- Patch version is raised when bugs are fixed.
+
+This repository stores source code for all major versions.
+When a new release is made, trained models are deployed to a repository dedicated to each major release.
+For example, when `v1.0.0` is released, `models/v1` is uploaded to `classifier-v1` repository.
+This applies to other build outputs, e.g., `examples/v1`.
