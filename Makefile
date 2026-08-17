@@ -1,84 +1,20 @@
 .ONESHELL:
-
-DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/mean_profiles/dataset* | xargs -n 1 basename))
-PROFILES_v1 = $(shell ls _data/v1/mean_profiles/$(1)/*.h5)
-N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
-TRAIN_JOBS ?= 1
-CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
-
-.PHONY: all models examples test clean .FORCE
+.SECONDEXPANSION:
+.SECONDARY:
+.PHONY: all models examples tests clean .FORCE
+# Dummy target to ensure that prerequisite files are built.
+.FORCE:
 
 all: models examples
 
-models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
+models: models-v1
 
-examples: $(wildcard examples/v1/*.ipynb)
+examples: examples-v1
 
-test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
-	@out=$$(mktemp).csv
-	trap 'rm -f $$out' EXIT INT TERM
-	for model in $^; do
-		echo "Testing $$model.."
-		heavyedge --log-level=INFO classify-predict _data/v1/mean_profiles/dataset5/001.h5 $$model -o $$out
-	done
+tests: test-v1
 
 clean:
 	shopt -s globstar nullglob
-	rm -rf _temp benchmarks examples/**/*.h5 models/**/*.pkl
+	rm -rf _temp benchmarks models/**/*.pkl
 
-_temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
-	mkdir -p $(@D)
-	heavyedge merge $^ -o $@
-
-_temp/v1/knees.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dataset)/knees.csv)
-	mkdir -p $(@D)
-	python3 -c "import pandas as pd; dfs = [pd.read_csv(path) for path in '$^'.split()]; pd.concat(dfs)[['Type']].to_csv('$@', index=False)"
-
-_temp/v1/canonical.csv: $(foreach dataset, $(DATASETS_v1), _data/v1/labels/$(dataset)/canonical.csv)
-	mkdir -p $(@D)
-	python3 -c "import pandas as pd; dfs = [pd.read_csv(path) for path in '$^'.split()]; pd.concat(dfs)[['Type']].to_csv('$@', index=False)"
-
-_temp/v1/labels.csv: scripts/v1/write-labels.py _temp/v1/knees.csv _temp/v1/canonical.csv
-	python3 $^ -o $@
-
-models/v1/classifiers/minirocket.%.pkl: _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
-	mkdir -p $(@D)
-	heavyedge --log-level=INFO classify-train --n-splits $(N_SPLITS) --calibration $* --n-jobs $(TRAIN_JOBS) --random-state 42 $^ -o $@
-
-_temp/v1/cv-splits.csv: scripts/v1/cv-splits.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv
-	mkdir -p $(@D)
-	python3 $^ --n-splits $(N_SPLITS) -o $@
-
-benchmarks/v1/CV.%.csv: scripts/v1/cv.py _temp/v1/MeanProfiles.h5 _temp/v1/labels.csv _temp/v1/cv-splits.csv
-	mkdir -p $(@D)
-	python3 $^ --calibration=$* --n-splits $(N_SPLITS) -o $@
-
-benchmarks/v1/CalibrationCurve.%.csv: scripts/v1/calibration-curve.py _temp/v1/labels.csv benchmarks/v1/CV.%.csv
-	python3 $^ --n-bins 5 -o $@
-
-benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1/labels.csv _temp/v1/cv-splits.csv benchmarks/v1/CV.%.csv
-	python3 $^ -o $@
-
-examples/v1/profiles.h5: \
-_data/v1/mean_profiles/dataset1/013.h5 \
-_data/v1/mean_profiles/dataset5/013.h5 \
-_data/v1/mean_profiles/dataset5/033.h5 \
-_data/v1/mean_profiles/dataset5/016.h5 \
-_data/v1/mean_profiles/dataset2/017.h5 \
-_data/v1/mean_profiles/dataset2/356.h5 \
-_data/v1/mean_profiles/dataset1/027.h5
-	mkdir -p $(@D)
-	heavyedge merge $^ -o $@
-
-examples/v1/profiles.ipynb: examples/v1/profiles.h5
-	jupyter nbconvert --to notebook --execute --inplace $@
-
-examples/v1/calibration_curve.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationCurve.$(method).csv) .FORCE
-	jupyter nbconvert --to notebook --execute --inplace $@
-
-examples/v1/calibration_scores.ipynb: $(foreach method,$(CALIBRATION_METHODS_v1),benchmarks/v1/CalibrationScores.$(method).csv) .FORCE
-	jupyter nbconvert --to notebook --execute --inplace $@
-
-.FORCE:  # dummy target to force execution of dependent targets
-
-.SECONDARY:
+include make/v1.mk

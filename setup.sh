@@ -2,6 +2,10 @@
 
 pip install uv
 
+uv tool install --force 'huggingface_hub[cli]'
+export PATH="$(uv tool dir --bin):$PATH"
+export HF_TOKEN="${HF_TOKEN:-$HUGGINGFACE_TOKEN}"
+
 mkdir -p ./_data/v1/
 
 (
@@ -11,8 +15,8 @@ requirements_pid=$!
 
 (
     curl -LsSf https://hf.co/cli/install.sh | bash
-    "$HOME/.local/bin/hf" auth login --token "$HUGGINGFACE_TOKEN"
-    "$HOME/.local/bin/hf" download heavyedge/profiles --repo-type dataset --revision v1.0.0rc3 --include "v1/mean_profiles/*.tar.gz" --local-dir _data/
+    hf auth login --token "$HUGGINGFACE_TOKEN"
+    hf download heavyedge/profiles --repo-type dataset --revision v1.0.0rc3 --include "v1/mean_profiles/*.tar.gz" --local-dir _data/
     for dataset in _data/v1/mean_profiles/*.tar.gz; do
         stem=$(basename "$dataset" .tar.gz)
         dirname=_data/v1/mean_profiles/"$stem"
