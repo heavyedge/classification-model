@@ -1,7 +1,7 @@
 .PHONY: models-v1 examples-v1 test-v1
 
-DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/mean_profiles/dataset* | xargs -n 1 basename))
-PROFILES_v1 = $(shell ls _data/v1/mean_profiles/$(1)/*.h5)
+DATASETS_v1 := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),dataset5,$(shell ls -d _data/v1/profiles/mean_profiles/dataset* | xargs -n 1 basename))
+PROFILES_v1 = $(shell ls _data/v1/profiles/mean_profiles/$(1)/*.h5)
 N_SPLITS := $(if $(filter 1,$(HEAVYEDGE_TEST_MODE)),2,5)
 TRAIN_JOBS ?= 1
 CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
@@ -15,7 +15,7 @@ test-v1: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/miniro
 	trap 'rm -f $$out' EXIT INT TERM
 	for model in $^; do
 		echo "Testing $$model.."
-		heavyedge --log-level=INFO classify-predict _data/v1/mean_profiles/dataset5/001.h5 $$model -o $$out
+		heavyedge --log-level=INFO classify-predict _data/v1/profiles/mean_profiles/dataset5/001.h5 $$model -o $$out
 	done
 
 _temp/v1/MeanProfiles.h5: $(foreach dataset,$(DATASETS_v1),$(call PROFILES_v1,$(dataset)))
@@ -52,13 +52,13 @@ benchmarks/v1/CalibrationScores.%.csv: scripts/v1/calibration-scores.py _temp/v1
 	python3 $^ -o $@
 
 examples/v1/profiles.h5: \
-_data/v1/mean_profiles/dataset1/013.h5 \
-_data/v1/mean_profiles/dataset5/013.h5 \
-_data/v1/mean_profiles/dataset5/033.h5 \
-_data/v1/mean_profiles/dataset5/016.h5 \
-_data/v1/mean_profiles/dataset2/017.h5 \
-_data/v1/mean_profiles/dataset2/356.h5 \
-_data/v1/mean_profiles/dataset1/027.h5
+_data/v1/profiles/mean_profiles/dataset1/013.h5 \
+_data/v1/profiles/mean_profiles/dataset5/013.h5 \
+_data/v1/profiles/mean_profiles/dataset5/033.h5 \
+_data/v1/profiles/mean_profiles/dataset5/016.h5 \
+_data/v1/profiles/mean_profiles/dataset2/017.h5 \
+_data/v1/profiles/mean_profiles/dataset2/356.h5 \
+_data/v1/profiles/mean_profiles/dataset1/027.h5
 	mkdir -p $(@D)
 	heavyedge merge $^ -o $@
 

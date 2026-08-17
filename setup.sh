@@ -16,14 +16,14 @@ requirements_pid=$!
 (
     curl -LsSf https://hf.co/cli/install.sh | bash
     hf auth login --token "$HUGGINGFACE_TOKEN"
-    hf download heavyedge/profiles --repo-type dataset --revision v1.0.0 --include "v1/mean_profiles/*.tar.gz" --local-dir _data/
-    for dataset in _data/v1/mean_profiles/*.tar.gz; do
+    hf download heavyedge/profiles --repo-type dataset --revision v1.0.0 --include "v1/profiles/mean_profiles/*.tar.gz" --local-dir _data/
+    for dataset in _data/v1/profiles/mean_profiles/*.tar.gz; do
         stem=$(basename "$dataset" .tar.gz)
-        dirname=_data/v1/mean_profiles/"$stem"
+        dirname=_data/v1/profiles/mean_profiles/"$stem"
         mkdir -p "$dirname"
         tar -xzf "$dataset" -C "$dirname"
     done
-    rm -f _data/v1/mean_profiles/*.tar.gz
+    rm -f _data/v1/profiles/mean_profiles/*.tar.gz
 ) &
 profiles_pid=$!
 
