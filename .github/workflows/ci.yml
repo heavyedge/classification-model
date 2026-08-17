@@ -62,7 +62,7 @@ jobs:
           run: HEAVYEDGE_TEST_MODE=1 make
 
         - name: test models
-          run: HEAVYEDGE_TEST_MODE=1 make test
+          run: HEAVYEDGE_TEST_MODE=1 make tests
 
         - uses: actions/upload-artifact@v4
           with:
