@@ -8,13 +8,13 @@ CALIBRATION_METHODS_v1 := sigmoid isotonic sigmoid_ovo isotonic_ovo temperature
 
 .PHONY: all models examples test clean .FORCE
 
-all: models examples
+all: models-v1 examples-v1
 
-models: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
+models-v1: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
 
-examples: $(wildcard examples/v1/*.ipynb)
+examples-v1: $(wildcard examples/v1/*.ipynb)
 
-test: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
+test-v1: $(foreach method,$(CALIBRATION_METHODS_v1),models/v1/classifiers/minirocket.$(method).pkl)
 	@out=$$(mktemp).csv
 	trap 'rm -f $$out' EXIT INT TERM
 	for model in $^; do
