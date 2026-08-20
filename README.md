@@ -163,7 +163,9 @@ The following rules apply to the final release versions:
 - Minor version is raised when the models are trained with new dataset.
 - Patch version is raised when bugs are fixed.
 
-This repository stores source code for all major versions.
+This repository stores source code for multiple major versions.
+When new major version breaks CI/CD pipeline (e.g., having conflicting requirements), new repository can be made.
+
 When a new release is made, trained models are deployed to a repository dedicated to each major release.
 For example, when `v1.0.0` is released, `models/v1` is uploaded to `classifier-v1` repository.
 This applies to other build outputs, e.g., `examples/v1`.
